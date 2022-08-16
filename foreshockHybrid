@@ -1,0 +1,27 @@
+#!/bin/sh
+
+#SBATCH --partition=t1standard
+#SBATCH --ntasks=100
+#SBATCH --mail-user=atvu@alaska.edu
+#SBATCH --mail-type=BEGIN
+#SBATCH --mail-type=END
+#SBATCH --mail-type=FAIL
+#SBATCH --output=hybrid.%j
+
+ulimit -s unlimited
+ulimit -f unlimited
+ulimit -l unlimited
+
+# Load any desired modules, usually the same as loaded to compile
+. /etc/profile.d/modules.sh
+module purge
+module load toolchain/pic-intel/2016b
+module load slurm
+
+cd $SLURM_SUBMIT_DIR
+# Generate a list of allocated nodes; will serve as a machinefile for mpirun
+srun -l /bin/hostname | sort -n | awk '{print $2}' > ./nodes.$SLURM_JOB_ID
+# Launch the MPI application
+mpirun -np $SLURM_NTASKS -machinefile ./nodes.$SLURM_JOB_ID ./hybrid
+# Clean up the machinefile
+rm ./nodes.$SLURM_JOB_ID

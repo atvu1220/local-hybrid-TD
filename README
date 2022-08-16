@@ -1,0 +1,7 @@
+This is a readme file for the fortran 90 version of the hybrid code.
+
+This master branch is a one-dimensional implementataion.
+
+Compile with mpi.
+
+
