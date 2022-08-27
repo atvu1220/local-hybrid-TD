@@ -1,0 +1,19 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/andrewvu/Library/Mobile Documents/com~apple~CloudDocs/Research/hybrid-code/local-hybrid-TD'
+mpifort -ffree-line-length-none -std=legacy -c dimensions.f90
+ 
+mpifort -ffree-line-length-none -std=legacy -c mult_proc.f90
+mpifort -ffree-line-length-none -std=legacy -c grid.f90
+mpifort -ffree-line-length-none -std=legacy -c var_arrays.f90
+mpifort -ffree-line-length-none -std=legacy -c inputs.f90
+mpifort -ffree-line-length-none -std=legacy -c boundary.f90
+mpifort -ffree-line-length-none -std=legacy -c grid_interp.f90
+mpifort -ffree-line-length-none -std=legacy -c misc.f90
+mpifort -ffree-line-length-none -std=legacy -c gutsp.f90
+mpifort -ffree-line-length-none -std=legacy -c gutsf.f90
+mpifort -ffree-line-length-none -std=legacy -c initial.f90
+mpifort -ffree-line-length-none -std=legacy -c part_init.f90
+mpifort -ffree-line-length-none -std=legacy -c maind.f90
+mpifort -ffree-line-length-none -std=legacy -o hybrid dimensions.o inputs.o grid.o mult_proc.o boundary.o misc.o grid_interp.o gutsp.o gutsf.o initial.o part_init.o var_arrays.o maind.o 
+make: Leaving directory `/Users/andrewvu/Library/Mobile Documents/com~apple~CloudDocs/Research/hybrid-code/local-hybrid-TD'
+ 

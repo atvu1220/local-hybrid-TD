@@ -32,14 +32,9 @@ module Var_Arrays
                   up_t(nx,ny,nz,3), &
                   up_b(nx,nz,nz,3), &
                   input_p(3), &
-                  input_E, input_Eb, bndry_Eflux, prev_Etot, &
-                  grav(nx,ny,nz), &            !gravity term
+                  input_E, input_Eb, prev_Etot, &
                   gradP(nx,ny,nz,3),&            !electron pressure gradient
                   mixed(nx,ny,nz),& !FS ions
-                  ionPos(5,3),& 
-                  testPartPos(nTestParticles_max,3),& !Test Particle Positions
-                  xSC(1000,3), & !Positions of Particles in Cell of Spacecraft Trajectory
-                  vSC(1000,4), & !velocity of particles in cell of Spacecraft Trajectory, then beta of particle (weight)
                   Ptherm(nx,ny,nz), &
                   PB(nx,ny,nz), &
                   Ptotal(nx,ny,nz), &
@@ -55,19 +50,15 @@ module Var_Arrays
                   curlBcurrent(nx,ny,nz,3), & !mu0*J current.
                   ue(nx,ny,nz,3)
       
-      integer(4):: Ni_tot, Ni_tot_sys, Ni_init,nTestParticles, additional_ions,sumAddedPerRow(nz),avgAddedPerRow(nz)
-      integer::    vdist_init(-80:80,-80:80), vdist_add(-80:80,-80:80), vpp_init(-80:80,-80:80), vpp_add(-80:80,-80:80)
+      integer(4):: Ni_tot, Ni_tot_sys, Ni_init, additional_ions,sumAddedPerRow(nz),avgAddedPerRow(nz)
       
       !Location (indices) of particles in the grid
-      
-      integer:: ijkp(Ni_max,3),testPartIndex(nTestParticles_max),nSC(1) !number of particles in cell of Spacecraft Trajectory
+      integer:: ijkp(Ni_max,3)
       logical:: in_bounds(Ni_max)
-      real:: mix_ind(Ni_max), Ptotal_average, PSW_average, Ptotal_sum, density_sum,density_average
+      real:: mix_ind(Ni_max), Ptotal_average, PSW_average, Ptotal_sum, density_sum, density_average
       
       !Weight variables for trilinear interpolation
-      
       real:: wght(Ni_max,8)
-                  
                   
       integer:: np_t_flg(Ni_max), np_b_flg(Ni_max)
       

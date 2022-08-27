@@ -60,50 +60,12 @@ module misc
                   lcg = int(mod(s, int(huge(0), int64)), kind(0))
             end function lcg
       end subroutine seed_mpi
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      subroutine get_bndry_Eflux(b1,E,bndry_Eflux)
-            use dimensions
-            use inputs, only: mO,q,dt,dx,dy,km_to_m,mu0
-            implicit none
-            real, intent(in):: b1(nx,ny,nz,3), E(nx,ny,nz,3)
-            real, intent(inout):: bndry_Eflux
-            integer:: i,j,k
-            real:: exb_flux, mO_q
-            
-            mO_q = mO/q
-            !k=2 face
-            do i = 2, nx
-                  do j= 2, ny
-!                        m=3
-                        k=2
-                        exb_flux = (mO_q)**2*(1.0/mu0)*dt*dx*dy* &
-                              (E(i,j,k,1)*b1(i,j,k,2) - E(i,j,k,2)*b1(i,j,k,1))* &
-                              km_to_m**3
-                        bndry_Eflux = bndry_Eflux + exb_flux
-                        
-                  enddo
-            enddo
-            
-            !k=nx face
-            
-            do i =2,nx
-                  do j=2,ny
-                        k = nz-1
-                        exb_flux = (mO_q)**2*(1.0/mu0)*dt*dx*dy* &
-                              (E(i,j,k,1)*b1(i,j,k,2) - E(i,j,k,2)*b1(i,j,k,1))* &
-                              km_to_m**3
-                        bndry_Eflux = bndry_Eflux - exb_flux
-                        
-                  enddo
-            enddo
-      
-      end subroutine get_bndry_Eflux
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       subroutine get_beta(Ni_tot_sys,beta)
             use dimensions
             use grid, only: qx,qy,qz
-            use inputs, only: np_top
+            use inputs, only: nf_init
             implicit none
             integer(4), intent(in):: Ni_tot_sys
             real, intent(out):: beta
@@ -111,7 +73,7 @@ module misc
             
             
             vol = ((qx(nx-1)-qx(1))*(qy(ny-1)-qy(1))*(qz(nz-1)-qz(1)))
-            beta = (Ni_tot_sys/vol)/np_top
+            beta = (Ni_tot_sys/vol)/nf_init
             
             !write(*,*) 'beta....',beta
             
@@ -160,122 +122,4 @@ module misc
       end subroutine get_gradP
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      subroutine get_v_dist()
-            use MPI
-            use dimensions
-            use var_arrays, only: vdist_init,vdist_add, vpp_init,vpp_add,Ni_init, Ni_tot,vp
-            implicit none
-            integer:: i,j,k,m,l,vxb,vxe,vyb,vye,vzb,vze,ierr,count
-            integer, allocatable:: recvbuf(:)
-            
-!            integer:: vdist_init(-80:80),vdist_add(-80:80), Ni_init, Ni_tot
-!            Ni_init=10
-!            Ni_tot = 100
-            
-            vxb=-80
-            vxe=80
-            vyb=-80
-            vye=80
-            vzb=-80
-            vze=80
-            count = (-vxb+vxe+1)*(-vyb+vye+1)
-            allocate(recvbuf(count))
-            
-            vdist_init(:,:) = 0
-            vdist_add(:,:) = 0
-            vpp_init(:,:) = 0
-            vpp_add(:,:) = 0
-            
-            do l=1,Ni_init
-                  i=floor(vp(l,1)-57.0)
-                  j=floor(vp(l,2))
-                  if ( (i .lt. vxb) .or. (i .gt. vxe) ) then
-                        cycle
-                  endif
-                  if ( (j .lt. vyb) .or. (j .gt. vye) ) then
-                        cycle
-                  endif
-                  vdist_init(i,j) = vdist_init(i,j) + 1
-            enddo
-            do l= Ni_init+1, Ni_tot
-                  i=floor(vp(l,1)-57.0)
-                  j=floor(vp(l,2))
-                  if ( (i .lt. vxb) .or. (i .gt. vxe) ) then
-                        cycle
-                  endif
-                  if ( (j .lt. vyb) .or. (j .gt. vye) ) then
-                        cycle
-                  endif
-                  vdist_add(i,j) = vdist_add(i,j) + 1
-            enddo
-            do l= 1, Ni_init
-                  m=floor(sqrt((vp(l,1)-57.0)**2+vp(l,2)**2))  ! -57 inside sqrt
-                  k=floor(vp(l,3))
-                  if ( (m .lt. vxb) .or. (i .gt. vxe) ) then
-                        cycle
-                  endif
-                  if ( (k .lt. vyb) .or. (j .gt. vye) ) then
-                        cycle
-                  endif
-                  vpp_init(m,k) = vpp_init(m,k) + 1
-            enddo
-            do l= Ni_init+1, Ni_tot
-                  m=floor(sqrt((vp(l,1)-57.0)**2+vp(l,2)**2)) ! -57 inside sqrt
-                  k=floor(vp(l,3))
-                  if ( (m .lt. vxb) .or. (i .gt. vxe) ) then
-                        cycle
-                  endif
-                  if ( (k .lt. vyb) .or. (j .gt. vye) ) then
-                        cycle
-                  endif
-                  vpp_add(m,k) = vpp_add(m,k) + 1
-            enddo
-            
-            call MPI_BARRIER(MPI_COMM_WORLD,ierr)
-            call MPI_ALLREDUCE(vdist_init(:,:),recvbuf,count,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
-            vdist_init(:,:) = reshape(recvbuf,(/(-vxb+vxe+1),(-vyb+vye+1)/))
-            
-            call MPI_BARRIER(MPI_COMM_WORLD,ierr)
-            call MPI_ALLREDUCE(vdist_add(:,:),recvbuf,count,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
-            vdist_add(:,:) = reshape(recvbuf,(/(-vxb+vxe+1),(-vyb+vye+1)/))
-            
-            call MPI_BARRIER(MPI_COMM_WORLD,ierr)
-            call MPI_ALLREDUCE(vpp_init(:,:),recvbuf,count,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
-            vpp_init(:,:) = reshape(recvbuf,(/(-vxb+vxe+1),(-vyb+vye+1)/))
-            
-            call MPI_BARRIER(MPI_COMM_WORLD,ierr)
-            call MPI_ALLREDUCE(vpp_add(:,:),recvbuf,count,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
-            vpp_add(:,:) = reshape(recvbuf,(/(-vxb+vxe+1),(-vyb+vye+1)/))
-            deallocate(recvbuf)
-            
-      end subroutine get_v_dist
-            
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-!      subroutine get_np3(nfp,np3)
-!            use dimensions
-!            use boundary
-!            implicit none
-!            real, intent(in):: nfp(nx,ny,nz)
-!            real, intent(out):: np3(nx,ny,nz,3)
-!            integer:: i,j,k
-            
-!            do i = 2, nx-1
-!                  do j= 2, ny-1
-!                        do k = 2, nz-1
-!                              np3(i,j,k,1) = 0.5*(nfp(i,j,k)+nfp(i+1,j,k))
-!                              np3(i,j,k,2) = 0.5*(nfp(i,j,k)+nfp(i,j+1,k))
-!                              np3(i,j,k,3) = 0.5*(nfp(i,j,k)+nfp(i,j,k+1))
-!                        enddo
-!                  enddo
-!            enddo
-            
-!            call boundary_vector(np3)
-!            call periodic(np3)
-            
-!      end subroutine get_np3
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-            
 end module misc

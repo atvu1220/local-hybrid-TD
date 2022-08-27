@@ -156,34 +156,7 @@ module grid_interp
 !            call periodic(vc)
             
       end subroutine face_to_center
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      subroutine grav_to_center(grav,gravc)
-            use dimensions
-            use boundary
-            use grid, only: zrat
-            implicit none
-            real, intent(inout):: grav(nx,ny,nz)
-            real, intent(out):: gravc(nx,ny,nz)
-            integer:: i,j,k,km
-            
-            call boundary_scalar(grav)
-!            call periodic_scalar(grav)
-            do i=2,nx
-                  do j=2,ny
-                        do k=2,nz
-                              
-                              km=k-1
-                              
-                              gravc(i,j,k) = zrat(k)*(grav(i,j,k)-grav(i,j,km)) + grav(i,j,km)
-                        enddo
-                  enddo
-            enddo
-            
-            call boundary_scalar(gravc)
-!            call periodic_scalar(gravc)
-            
-      end subroutine grav_to_center
-      
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 end module grid_interp
 
             

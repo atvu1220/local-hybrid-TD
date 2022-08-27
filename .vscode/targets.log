@@ -1,0 +1,539 @@
+make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+# GNU Make 3.81
+# Copyright (C) 2006  Free Software Foundation, Inc.
+# This is free software; see the source for copying conditions.
+# There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+# This program built for i386-apple-darwin11.3.0
+
+# Make data base, printed on Mon Aug 22 22:00:28 2022
+
+# Variables
+
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# automatic
+?F = $(notdir $?)
+# makefile (from `makefile', line 13)
+INCLUDE3 = dimensions.o inputs.o grid.o mult_proc.o boundary.o misc.o grid_interp.o gutsp.o gutsf.o var_arrays.o
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# automatic
+@F = $(notdir $@)
+# makefile
+CURDIR := /Users/andrewvu/Library/Mobile Documents/com~apple~CloudDocs/Research/hybrid-code/local-hybrid-TD
+# makefile
+SHELL = /bin/sh
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
+# environment
+_ = /usr/bin/make
+# makefile (from `makefile', line 5)
+F90 = mpifort -ffree-line-length-none -std=legacy
+# makefile (from `makefile', line 12)
+INCLUDE2 = dimensions.o inputs.o grid.o mult_proc.o boundary.o var_arrays.o
+# makefile (from `makefile', line 1)
+MAKEFILE_LIST :=  makefile
+# makefile (from `makefile', line 9)
+DEBUG = -g -check all -warn -traceback -fbounds-check -fp-stack-check
+# environment
+__CFBundleIdentifier = com.microsoft.VSCode
+# environment
+VSCODE_CWD = /
+# environment
+PATH = /opt/anaconda3/bin:/opt/anaconda3/condabin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Applications/VMware Fusion.app/Contents/Public:/Library/TeX/texbin
+# environment
+LaunchInstanceID = 3EF5699F-9745-49CF-B2C9-48ADCD5D358F
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# default
+.FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
+# environment
+SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.3sesIMGfID/Listeners
+# automatic
+%F = $(notdir $%)
+# environment
+CONDA_EXE = /opt/anaconda3/bin/conda
+# environment
+PWD = /Users/andrewvu/Library/Mobile Documents/com~apple~CloudDocs/Research/hybrid-code/local-hybrid-TD
+# environment
+ORIGINAL_XDG_CURRENT_DESKTOP = undefined
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# environment
+HOME = /Users/andrewvu
+# default
+MAKEFILEPATH = $(shell /usr/bin/xcode-select -print-path 2>/dev/null || echo /Developer)/Makefiles
+# environment
+VSCODE_CODE_CACHE_PATH = /Users/andrewvu/Library/Application Support/Code/CachedData/6d9b74a70ca9c7733b29f0456fd8195364076dda
+# environment
+LOGNAME = andrewvu
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+# environment
+CONDA_PROMPT_MODIFIER = (base) 
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# environment
+CONDA_DEFAULT_ENV = base
+# environment
+XPC_FLAGS = 0x0
+# default
+MAKE = $(MAKE_COMMAND)
+# default
+MAKECMDGOALS := all
+# makefile (from `makefile', line 14)
+INCLUDE4 = dimensions.o inputs.o grid.o mult_proc.o boundary.o misc.o grid_interp.o gutsp.o gutsf.o initial.o part_init.o var_arrays.o
+# environment
+SHLVL = 2
+# default
+MAKE_VERSION := 3.81
+# environment
+USER = andrewvu
+# makefile
+.DEFAULT_GOAL := hybrid
+# makefile (from `makefile', line 11)
+INCLUDE = dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# environment
+CONDA_SHLVL = 1
+# default
+MAKE_COMMAND := /Library/Developer/CommandLineTools/usr/bin/make
+# default
+.VARIABLES := 
+# environment
+TMPDIR = /var/folders/7j/ljzl34397bj70j4czwzqgkvr0000gn/T/
+# automatic
+*F = $(notdir $*)
+# environment
+VSCODE_IPC_HOOK = /Users/andrewvu/Library/Application Support/Code/1.70.1-main.sock
+# environment
+MallocNanoZone = 0
+# makefile
+MAKEFLAGS = Rrqp
+# environment
+MFLAGS = -Rrqp
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# environment
+XPC_SERVICE_NAME = application.com.microsoft.VSCode.12935179167.12935179173
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# automatic
++F = $(notdir $+)
+# environment
+__CF_USER_TEXT_ENCODING = 0x1F5:0x0:0x0
+# environment
+COMMAND_MODE = unix2003
+# default
+MAKEFILES := 
+# automatic
+<F = $(notdir $<)
+# makefile (from `makefile', line 16)
+MODS = dimensions.mod mult_proc.mod var_array.mod inputs.mod grid.mod initial.mod gutsf.mod misc.mod boundary.mod part_init.mod grid_interp.mod gutsp.mod
+# environment
+LC_ALL = C
+# environment
+CONDA_PYTHON_EXE = /opt/anaconda3/bin/python
+# environment
+SECURITYSESSIONID = 186a3
+# automatic
+^F = $(notdir $^)
+# default
+SUFFIXES := 
+# environment
+_CE_M = 
+# default
+.INCLUDE_DIRS = /usr/local/include
+# environment
+MAKELEVEL := 0
+# makefile (from `makefile', line 15)
+OBJECTS = dimensions.o inputs.o grid.o mult_proc.o boundary.o misc.o grid_interp.o gutsp.o gutsf.o initial.o part_init.o var_arrays.o maind.o
+# environment
+CONDA_PREFIX = /opt/anaconda3
+# environment
+VSCODE_PID = 62118
+# makefile (from `makefile', line 10)
+FILESO = dimensions.f90 boundary.f90 grid_interp.f90 mult_proc.f90 var_arrays.f90 inputs.f90 grid.f90 initial.f90 gutsf.f90 misc.f90 part_init.f90 gutsp.f90 maind.f90
+# environment
+_CE_CONDA = 
+# makefile (from `makefile', line 8)
+FILES = dimensions.f90 mult_proc.f90 grid.f90 boundary.f90 var_arrays.f90 inputs.f90 misc.f90  grid_interp.f90 gutsf.f90 gutsp.f90  initial.f90 part_init.f90 maind.f90
+# environment
+LANG = C
+# variable set hash-table stats:
+# Load=78/1024=8%, Rehash=0, Collisions=21/123=17%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# . (device 16777220, inode 12935181761): 50 files, no impossibilities.
+
+# 50 files, no impossibilities in 1 directories.
+
+# Implicit Rules
+
+# No implicit rules.
+
+# Files
+
+# Not a target:
+grid.f90:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+gutsp.f90:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+misc.mod: misc.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 47):
+	$(F90) -c misc.f90
+	
+
+# Not a target:
+all:
+#  Command-line target.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has not been updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+gutsf.f90:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+var_arrays.mod: var_arrays.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 52):
+	$(F90) -c var_arrays.f90
+	
+
+grid.o: grid.f90
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 29):
+	$(F90) -c grid.f90
+	
+
+inputs.mod: inputs.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 51):
+	$(F90) -c inputs.f90
+	
+
+gutsp.o: gutsp.f90 dimensions.o inputs.o grid.o mult_proc.o boundary.o var_arrays.o grid_interp.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 35):
+	$(F90) -c gutsp.f90
+	
+
+# Not a target:
+misc.f90:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+grid_interp.mod: grid_interp.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 44):
+	$(F90) -c grid_interp.f90
+	
+
+gutsf.o: gutsf.f90 dimensions.o inputs.o grid.o mult_proc.o boundary.o var_arrays.o grid_interp.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+ 
+make: *** No rule to make target `all'.  Stop.
+
+#  commands to execute (from `makefile', line 34):
+	$(F90) -c gutsf.f90
+	
+
+# Not a target:
+.SUFFIXES:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+var_arrays.f90:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+debug: dimensions.o inputs.o grid.o mult_proc.o boundary.o misc.o grid_interp.o gutsp.o gutsf.o initial.o part_init.o var_arrays.o maind.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 22):
+	$(F90) -o hybrid $(OBJECTS) $(DEBUG)
+	
+
+# Not a target:
+inputs.f90:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+mult_proc.mod: mult_proc.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 42):
+	$(F90) -c mult_proc.f90
+	
+
+misc.o: misc.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o boundary.o grid_interp.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 32):
+	$(F90) -c misc.f90
+	
+
+# Not a target:
+makefile:
+#  Implicit rule search has been done.
+#  Last modified 2022-08-19 11:48:38
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+part_init.mod: part_init.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 49):
+	$(F90) -c part_init.f90
+	
+
+# Not a target:
+grid_interp.f90:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+var_arrays.o: var_arrays.f90
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 38):
+	$(F90) -c var_arrays.f90
+	
+
+# Not a target:
+maind.f90:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+inputs.o: inputs.f90 dimensions.o mult_proc.o grid.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 30):
+	$(F90) -c inputs.f90
+	
+
+dimensions.mod: dimensions.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 41):
+	$(F90) -c dimensions.f90
+	
+
+# Not a target:
+mult_proc.f90:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+part_init.f90:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+grid_interp.o: grid_interp.f90 dimensions.o inputs.o grid.o mult_proc.o boundary.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 33):
+	$(F90) -c grid_interp.f90
+	
+
+maind.o: maind.f90 dimensions.o inputs.o grid.o mult_proc.o boundary.o misc.o grid_interp.o gutsp.o gutsf.o initial.o part_init.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 39):
+	$(F90) -c maind.f90
+	
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+boundary.mod: boundary.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 48):
+	$(F90) -c boundary.f90
+	
+
+mult_proc.o: mult_proc.f90
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 28):
+	$(F90) -c mult_proc.f90
+	
+
+# Not a target:
+dimensions.f90:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+hybrid: dimensions.o inputs.o grid.o mult_proc.o boundary.o misc.o grid_interp.o gutsp.o gutsf.o initial.o part_init.o var_arrays.o maind.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 19):
+	$(F90) -o hybrid $(OBJECTS) 
+	
+
+part_init.o: part_init.f90 dimensions.o inputs.o grid.o mult_proc.o boundary.o misc.o grid_interp.o gutsp.o gutsf.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 37):
+	$(F90) -c part_init.f90
+	
+
+initial.mod: initial.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 50):
+	$(F90) -c initial.f90
+	
+
+clean:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 25):
+	rm *.o hybrid *.out *.mod disp hybrid_d
+	
+
+dimensions.o: dimensions.f90
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 27):
+	$(F90) -c dimensions.f90
+	
+
+# Not a target:
+boundary.f90:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+initial.f90:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+boundary.o: boundary.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 31):
+	$(F90) -c boundary.f90
+	
+
+grid.mod: grid.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 43):
+	$(F90) -c grid.f90
+	
+
+gutsp.mod: gutsp.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 46):
+	$(F90) -c gutsp.f90
+	
+
+initial.o: initial.f90 inputs.o grid.o mult_proc.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 36):
+	$(F90) -c initial.f90
+	
+
+gutsf.mod: gutsf.f90 dimensions.o inputs.o grid.o mult_proc.o var_arrays.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 45):
+	$(F90) -c gutsf.f90
+	
+
+# files hash-table stats:
+# Load=45/1024=4%, Rehash=0, Collisions=3/229=1%
+# VPATH Search Paths
+
+# No `vpath' search paths.
+
+# No general (`VPATH' variable) search path.
+
+# # of strings in strcache: 1
+# # of strcache buffers: 1
+# strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
+# strcache free: total = 4087 / max = 4087 / min = 4087 / avg = 4087
+
+# Finished Make data base on Mon Aug 22 22:00:28 2022
+
+ 
