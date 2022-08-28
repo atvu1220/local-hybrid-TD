@@ -19,4 +19,4 @@
 90.0						        !Magnetic Shear across Harris Current Sheet
 1						            !Number of Quasi-parallel sides.
 0.0						            !By Cone Angle, 15.0, 30.0 only
-'/Users/andrewvu/Library/Mobile Documents/com~apple~CloudDocs/Research/hybrid-code/output/'   !output directory
+'/home/andrew/Documents/Run1'       !output directory

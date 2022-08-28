@@ -50,40 +50,40 @@ module initial
 							b0(i,j,k,1) = b0_init*eoverm*0.5*cos(magneticShear/180*pi/2)
 							b0(i,j,k,2) = -(b0_init*eoverm*0.5*sin(magneticShear/180*pi/2))
 							b0(i,j,k,3) = 0.0
-							if (k .le. nz/2.0) then !BL bottom
+							if (k .le. nz/2) then !BL bottom
 								b0(i,j,k,1) = b0(i,j,k,1) + &
-									(cos(0.0) - cos(magneticShear/180.0*pi/2.0) ) * b0_init*eoverm*0.5*tanh( ( qz(nz/2.0)-qz(k))/(ddthickness*delz))
+									(cos(0.0) - cos(magneticShear/180.0*pi/2.0) ) * b0_init*eoverm*0.5*tanh( ( qz(nz/2)-qz(k))/(ddthickness*delz))
 								b0(i,j,k,2) = (b0(i,j,k,2) + & 
-									(sin(magneticShear/180.0*pi/2.0) ) * b0_init*eoverm*0.5*tanh( ( qz(nz/2.0)-qz(k))/(ddthickness*delz)))
+									(sin(magneticShear/180.0*pi/2.0) ) * b0_init*eoverm*0.5*tanh( ( qz(nz/20)-qz(k))/(ddthickness*delz)))
 								b0(i,j,k,3) = 0.0
 							endif
-							if (k .gt. nz/2.0) then !BL top
+							if (k .gt. nz/2) then !BL top
 								b0(i,j,k,1) = b0(i,j,k,1) - &
-									(cos(magneticShear/180.0*pi/2) - cos(magneticShear/180.0*pi)   ) * b0_init*eoverm*0.5*tanh( (qz(k)-qz(nz/2.0) )/(ddthickness*delz))
+									(cos(magneticShear/180.0*pi/2) - cos(magneticShear/180.0*pi)   ) * b0_init*eoverm*0.5*tanh( (qz(k)-qz(nz/2) )/(ddthickness*delz))
 								b0(i,j,k,2) = (b0(i,j,k,2) - &
-									(sin(magneticShear/180.0*pi) - sin(magneticShear/180.0*pi/2.0) ) * b0_init*eoverm*0.5*tanh( (qz(k)-qz(nz/2.0) )/(ddthickness*delz)))
+									(sin(magneticShear/180.0*pi) - sin(magneticShear/180.0*pi/2.0) ) * b0_init*eoverm*0.5*tanh( (qz(k)-qz(nz/2) )/(ddthickness*delz)))
 								b0(i,j,k,3) = 0.0
 							endif
 						endif
 
 
 						if (Bsetup .eq. 15) then !BLMN Coordinates,with variable coneAngle By
-							if (k .le. nz/2.0) then !BL bottom 
+							if (k .le. nz/2) then !BL bottom 
 								b0(i,j,k,1) =  (cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+90)/180.0*pi))*0.25*b0_init*eoverm + &
 									(cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+90)/180.0*pi))*&
-									b0_init*eoverm*0.25*tanh( ( qz(nz/2.0)-qz(k))/(ddthickness*delz))
+									b0_init*eoverm*0.25*tanh( ( qz(nz/2)-qz(k))/(ddthickness*delz))
 								b0(i,j,k,2) =  (sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+90)/180.0*pi))*0.25*b0_init*eoverm + &
 									(sin(ByConeAngle/180.0*pi)-sin((ByConeAngle+90)/180.0*pi))*&
-									b0_init*eoverm*0.25*tanh( ( qz(nz/2.0)-qz(k))/(ddthickness*delz))
+									b0_init*eoverm*0.25*tanh( ( qz(nz/2)-qz(k))/(ddthickness*delz))
 								b0(i,j,k,3) = 0.0
 							endif
-							if (k .gt. nz/2.0) then !BL top
+							if (k .gt. nz/2) then !BL top
 								b0(i,j,k,1) = -(cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+90)/180.0*pi))*0.25*b0_init*eoverm + &
 									(cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+90)/180.0*pi))*&
-									b0_init*eoverm*0.25*tanh( (qz(k)-qz(nz/2.0) )/(ddthickness*delz))
+									b0_init*eoverm*0.25*tanh( (qz(k)-qz(nz/2) )/(ddthickness*delz))
 								b0(i,j,k,2) =  (sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+90)/180.0*pi))*0.25*b0_init*eoverm + &
 									(-sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+90)/180.0*pi))*&
-									b0_init*eoverm*0.25*tanh( (qz(k)-qz(nz/2.0) )/(ddthickness*delz))
+									b0_init*eoverm*0.25*tanh( (qz(k)-qz(nz/2) )/(ddthickness*delz))
 								b0(i,j,k,3) = 0.0
 							endif
 						endif
@@ -96,44 +96,44 @@ module initial
 							b0(i,j,k,2) = b0_init*eoverm*0.5*sin(magneticShear/180*pi/2)
 							b0(i,j,k,3) = 0.0
 							
-							if (k .le. nz/2.0) then
-								if (k .le. nz/3.0) then !BL bottom
+							if (k .le. nz/2) then
+								if (k .le. nz/3) then !BL bottom
 									b0(i,j,k,1) = b0(i,j,k,1) + &
 										(cos(0.0) - cos(magneticShear/180.0*pi/2.0) ) * &
-										b0_init*eoverm*0.5*tanh( ( qz(nz/3.0)-qz(k))/(ddthickness*delz))
+										b0_init*eoverm*0.5*tanh( ( qz(nz/3)-qz(k))/(ddthickness*delz))
 									b0(i,j,k,2) = b0(i,j,k,2) - &
 										(sin(magneticShear/180.0*pi/2.0) ) * &
-										b0_init*eoverm*0.5*tanh( ( qz(nz/3.0)-qz(k))/(ddthickness*delz))
+										b0_init*eoverm*0.5*tanh( ( qz(nz/3)-qz(k))/(ddthickness*delz))
 									b0(i,j,k,3) = 0.0
 								endif
-								if (k .gt. nz/3.0) then !BL top
+								if (k .gt. nz/3) then !BL top
 										b0(i,j,k,1) = b0(i,j,k,1) - &
 											(cos(magneticShear/180.0*pi/2) - cos(magneticShear/180.0*pi) ) * &
-											b0_init*eoverm*0.5*tanh( (qz(k)-qz(nz/3.0) )/(ddthickness*delz))
+											b0_init*eoverm*0.5*tanh( (qz(k)-qz(nz/3) )/(ddthickness*delz))
 										b0(i,j,k,2) = b0(i,j,k,2) + &
 											(sin(magneticShear/180.0*pi) - sin(magneticShear/180.0*pi/2.0) ) * &
-											b0_init*eoverm*0.5*tanh( (qz(k)-qz(nz/3.0) )/(ddthickness*delz))
+											b0_init*eoverm*0.5*tanh( (qz(k)-qz(nz/3) )/(ddthickness*delz))
 										b0(i,j,k,3) = 0.0
 								endif
 							endif
 			
-							if (k .gt. nz/2.0) then
-								if (k .ge. 2.0*nz/3.0) then !BL top
+							if (k .gt. nz/2) then
+								if (k .ge. 2*nz/3) then !BL top
 									b0(i,j,k,1) = b0(i,j,k,1) + &
 										(sin(magneticShear/180.0*pi) - sin(magneticShear/180.0*pi/2.0) ) * &
-										b0_init*eoverm*0.5*tanh( (qz(k)-qz(2.0*nz/3.0) )/(ddthickness*delz))
+										b0_init*eoverm*0.5*tanh( (qz(k)-qz(2*nz/3) )/(ddthickness*delz))
 									b0(i,j,k,2) = b0(i,j,k,2) - &
 										(cos(magneticShear/180.0*pi/2) - cos(magneticShear/180.0*pi)   ) * &
-										b0_init*eoverm*0.5*tanh( (qz(k)-qz(2.0*nz/3.0) )/(ddthickness*delz))
+										b0_init*eoverm*0.5*tanh( (qz(k)-qz(2*nz/3) )/(ddthickness*delz))
 									b0(i,j,k,3) = 0.0
 								endif									
-								if (k .lt. 2.0*nz/3.0) then !BL bottom
+								if (k .lt. 2*nz/3) then !BL bottom
 									b0(i,j,k,1) = b0(i,j,k,1) - &
 										( sin(magneticShear/180.0*pi/2.0) ) * &
-										b0_init*eoverm*0.5*tanh( ( qz(2.0*nz/3.0)-qz(k))/(ddthickness*delz))
+										b0_init*eoverm*0.5*tanh( ( qz(2*nz/3)-qz(k))/(ddthickness*delz))
 									b0(i,j,k,2) = b0(i,j,k,2) + &
 										(cos(0.0) - cos(magneticShear/180.0*pi/2.0) ) * &
-										b0_init*eoverm*0.5*tanh( ( qz(2.0*nz/3.0)-qz(k))/(ddthickness*delz))
+										b0_init*eoverm*0.5*tanh( ( qz(2*nz/3)-qz(k))/(ddthickness*delz))
 									b0(i,j,k,3) = 0.0
 								endif
 							endif
@@ -141,60 +141,60 @@ module initial
 						
 						if (Bsetup .eq. 17) then !BLMN Coordinates, with variable coneAngle By
 							!peridoic z, 2 TD, reflecting boundary
-							if (k .le. nz/2.0) then
-								if (k .le. nz/3.0) then !BL bottom 
+							if (k .le. nz/2) then
+								if (k .le. nz/3) then !BL bottom 
 									b0(i,j,k,1) = &
 									(cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+90)/180.0*pi))*&
 									0.5*b0_init*eoverm + &
 										(cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+90)/180.0*pi))*&
-										b0_init*eoverm*0.25*tanh( ( qz(nz/3.0)-qz(k))/(ddthickness*delz))
+										b0_init*eoverm*0.25*tanh( ( qz(nz/3)-qz(k))/(ddthickness*delz))
 									b0(i,j,k,2) = &
 									(sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+90)/180.0*pi))*&
 									0.5*b0_init*eoverm + &
 										(sin(ByConeAngle/180.0*pi)-sin((ByConeAngle+90)/180.0*pi))*&
-										b0_init*eoverm*0.25*tanh( ( qz(nz/3.0)-qz(k))/(ddthickness*delz))
+										b0_init*eoverm*0.25*tanh( ( qz(nz/3)-qz(k))/(ddthickness*delz))
 									b0(i,j,k,3) = 0.0
 								endif
-								if (k .gt. nz/3.0) then !BL top
+								if (k .gt. nz/3) then !BL top
 										b0(i,j,k,1) = &
 										+(cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+90)/180.0*pi))*&
 										0.25*b0_init*eoverm - &
 											(cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+90)/180.0*pi))*&
-											b0_init*eoverm*0.25*tanh( (qz(k)-qz(nz/3.0) )/(ddthickness*delz))
+											b0_init*eoverm*0.25*tanh( (qz(k)-qz(nz/3) )/(ddthickness*delz))
 										b0(i,j,k,2) = &
 										&(sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+90)/180.0*pi))*&
 										0.25*b0_init*eoverm + &
 											(-sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+90)/180.0*pi))*&
-											b0_init*eoverm*0.25*tanh( (qz(k)-qz(nz/3.0) )/(ddthickness*delz))
+											b0_init*eoverm*0.25*tanh( (qz(k)-qz(nz/3) )/(ddthickness*delz))
 										b0(i,j,k,3) = 0.0
 								endif
 							endif
 				
-							if (k .gt. nz/2.0) then			
-								if (k .gt. 2.0*nz/3.0) then !BL top
+							if (k .gt. nz/2) then			
+								if (k .gt. 2*nz/3) then !BL top
 										b0(i,j,k,1) = &
 										(-sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+90)/180.0*pi))*&
 										0.25*b0_init*eoverm + &
 											(sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+90)/180.0*pi))*&
-											b0_init*eoverm*0.25*tanh( (qz(k)-qz(2.0*nz/3.0) )/(ddthickness*delz))
+											b0_init*eoverm*0.25*tanh( (qz(k)-qz(2*nz/3) )/(ddthickness*delz))
 										b0(i,j,k,2) = &
 										(cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+90)/180.0*pi))*&
 										0.25*b0_init*eoverm - &
 											(cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+90)/180.0*pi))*&
-											b0_init*eoverm*0.25*tanh( (qz(k)-qz(2.0*nz/3.0) )/(ddthickness*delz))
+											b0_init*eoverm*0.25*tanh( (qz(k)-qz(2*nz/3) )/(ddthickness*delz))
 										b0(i,j,k,3) = 0.0
 								endif
-								if (k .le. 2.0*nz/3.0) then !BL bottom 
+								if (k .le. 2*nz/3) then !BL bottom 
 									b0(i,j,k,1) = &
 									(-sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+90)/180.0*pi))*&
 									0.25*b0_init*eoverm - &
 										(sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+90)/180.0*pi))*&
-										b0_init*eoverm*0.25*tanh( ( qz(2.0*nz/3.0)-qz(k))/(ddthickness*delz))
+										b0_init*eoverm*0.25*tanh( ( qz(2*nz/3)-qz(k))/(ddthickness*delz))
 									b0(i,j,k,2) = &
 									(cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+90)/180.0*pi))*&
 									0.25*b0_init*eoverm + &
 										(cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+90)/180.0*pi))*&
-										b0_init*eoverm*0.25*tanh( ( qz(2.0*nz/3.0)-qz(k))/(ddthickness*delz))
+										b0_init*eoverm*0.25*tanh( ( qz(2*nz/3)-qz(k))/(ddthickness*delz))
 									b0(i,j,k,3) = 0.0
 								endif
 							endif 
