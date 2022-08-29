@@ -49,17 +49,15 @@ module Var_Arrays
                   curlBcurrent(nx,ny,nz,3), & !mu0*J current.
                   ue(nx,ny,nz,3)
       
-      integer(4):: Ni_tot, Ni_tot_sys, Ni_init, additional_ions,sumAddedPerRow(nz),avgAddedPerRow(nz)
+      integer(4):: Ni_tot, Ni_tot_sys, Ni_init
       
       !Location (indices) of particles in the grid
       integer:: ijkp(Ni_max,3)
       logical:: in_bounds(Ni_max)
-      real:: mix_ind(Ni_max), Ptotal_average, PSW_average, Ptotal_sum, density_sum, density_average
+      real:: mix_ind(Ni_max)
       
       !Weight variables for trilinear interpolation
       real:: wght(Ni_max,8)
-                  
-      integer:: np_t_flg(Ni_max), np_b_flg(Ni_max)
       
 end module Var_Arrays
                   

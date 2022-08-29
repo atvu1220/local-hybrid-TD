@@ -7,20 +7,20 @@ module part_init
       subroutine load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mass,population)
             use dimensions
             use boundary
-            use inputs, only: PI, vsw, dx, dy, km_to_m, beta_particle, kboltz, mion, &
+            use inputs, only: PI, km_to_m, beta_particle, kboltz, mion, &
             nf_init,b0_init,mu0,boundx, q, mO, va_f, delz, &
-            ddthickness, plasma_beta,FSBeamWidth, FSThermalRatio,ddthickness,FSDriftSpeed,ForeshockBeta, TDpressureBalance
-            use grid, only: qx,qy,qz,dz_grid
+            ddthickness, plasma_beta,FSBeamWidth, FSThermalRatio,ddthickness,FSDriftSpeed,ForeshockBeta
+            use grid, only: qx,qy,qz
             use gutsp
-            use var_arrays, only: np,vp,vp1,xp,up,Ni_tot,ijkp,m_arr,beta,beta_p,wght,temp_p,mix_ind,b0, b1,E,ExB,bt,up_cold
+            use var_arrays, only: vp,vp1,xp,up,m_arr,beta_p,mix_ind,b0, b1
             implicit none
             integer(4), intent(in):: Ni_tot_1, Ni_tot_2
             real, intent(in):: mass, vth
-            real:: Lo_y,eoverm
+            real:: eoverm
             integer:: population
             integer:: disp,montecarlo
-            real:: vx, vy, vz, va, pl_beta(nx,ny,nz), fitdist, EvBx, EvBy,EvBz, &
-                  theta2,phi2, vxring, vyring, vzring,vring,vr,vtheta
+            real:: vx, vy, vz, va, pl_beta(nx,ny,nz), fitdist, EvBx, EvBy,EvBz!, &
+                  !vxring, vyring, vzring,vring,vr,vtheta
             integer:: l,m,i,j,k
 
             disp = 0

@@ -1,7 +1,6 @@
 module inputs
       use dimensions
       use mpi
-!      use var_arrays, only: Ni_tot_0
       implicit none
       save
       
@@ -9,7 +8,7 @@ module inputs
             nu_init_frac,lambda_i,mO, ppc, nu_init, &
             etemp0, mion, va, va_f, &
             FSDriftSpeed, FSDensityRatio, ForeshockBeta, &
-            TDpressureBalance, TDcellBalance, magneticShear, &
+            TDcellBalance, magneticShear, &
             ByConeAngle, FSThermalRatio
             
       real, parameter:: amu=1.6605e-27!, mion = 3.841e-26
@@ -100,8 +99,6 @@ module inputs
                  write(*,*) 'Foreshock Thermal Ratio........',FSThermalRatio
                  read(100,*) FSDriftSpeed
                  write(*,*) 'Foreshock Drift Speed........',FSDriftSpeed
-                 read(100,*) TDpressureBalance
-                 write(*,*) 'TD Pressure Balance........',TDpressureBalance
                  read(100,*) magneticShear
                  write(*,*) 'Magnetic Shear........',magneticShear
                  read(100,*) quasiparallel

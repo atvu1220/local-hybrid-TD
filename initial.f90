@@ -1,6 +1,6 @@
 module initial
-	use dimensions
-	implicit none
+use dimensions
+implicit none
 	save
 	contains
       
@@ -18,7 +18,7 @@ module initial
 		real, intent(inout):: input_Eb                    
 							
 		real:: eoverm, mO_q, vol, b0eoverm
-		real:: b0_1x, b0_2x, b0_1y, b0_2y, phi, dtheta
+		real:: phi, dtheta
 		integer:: i,j,k,m,Bsetup
 		
 		if (quasiparallel .eq. 1) then
@@ -262,8 +262,8 @@ module initial
 		use mult_proc, only: my_rank
 		use inputs, only: dx,dy,delz,out_dir
 		implicit none
-		integer:: i,j,k,ind
-		real:: xsf,zplus,zminus,xplus,xminus,yplus,yminus
+		integer:: i,j,k
+		real:: zplus,zminus,xplus,xminus,yplus,yminus
 		
 		rk = nz/2
 		rj= ny/2

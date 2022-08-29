@@ -90,7 +90,7 @@ program hybrid
       !Initial TD, TD center, turn off for real shock 1/28/22
       if (boundx .eq. 4) then
             Ni_tot_1 = Ni_tot + 1
-            TD_initial = procnum*floor(float(int((nx-2)*(ny-2)*TDcellBalance*TDpressureBalance*ppc/procnum))/procnum) !for 15dd, 5.06 for 15dd (30depletionwidth), then divide by two because B drops only 25%, 4.24664 for 15dd (15depletionwidith), 0.283 for 1dd, 2.83 for 20dd, 2.53 for 16dd
+            TD_initial = procnum*floor(float(int((nx-2)*(ny-2)*TDcellBalance*ppc/procnum))/procnum) !for 15dd, 5.06 for 15dd (30depletionwidth), then divide by two because B drops only 25%, 4.24664 for 15dd (15depletionwidith), 0.283 for 1dd, 2.83 for 20dd, 2.53 for 16dd
             Ni_tot_2 = Ni_tot_1 + TD_initial -1
             Ni_tot = Ni_tot_2  
             call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,4) !TD
@@ -181,7 +181,7 @@ program hybrid
       !Initialize Injection Parameters
       Nx_boundary = floor((nz-2)*(ny-2)*(1)*ppc/procnum)
       FS_boundary = ((cos(ByConeAngle/180.0*pi)*float(FSBeamWidth))/&
-            (nz-2+1*TDcellBalance*TDpressureBalance))*float(Nx_boundary)*int(FSDensityRatio/(100.0/ForeshockBeta))
+            (nz-2+1*TDcellBalance))*float(Nx_boundary)*int(FSDensityRatio/(100.0/ForeshockBeta))
       
 
       sw_speed = va_f*(b0_init/sqrt(mu0*mion*nf_init/1e9)/1e3)
