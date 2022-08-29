@@ -1,4 +1,5 @@
 program hybrid
+      use mpi
       use boundary
       use dimensions
       use Var_Arrays
@@ -12,7 +13,7 @@ program hybrid
       use grid_interp
       use grid
       use iso_fortran_env
-      use mpi
+      
       
       implicit none
 
@@ -90,7 +91,7 @@ program hybrid
       if (boundx .eq. 4) then
             Ni_tot_1 = Ni_tot + 1
             TD_initial = procnum*floor(float(int((nx-2)*(ny-2)*TDcellBalance*TDpressureBalance*ppc/procnum))/procnum) !for 15dd, 5.06 for 15dd (30depletionwidth), then divide by two because B drops only 25%, 4.24664 for 15dd (15depletionwidith), 0.283 for 1dd, 2.83 for 20dd, 2.53 for 16dd
-            Ni_tot_2 = Ni_tot_1 + TD_initial 
+            Ni_tot_2 = Ni_tot_1 + TD_initial -1
             Ni_tot = Ni_tot_2  
             call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,4) !TD
       elseif (boundx .eq. 5) then
@@ -236,7 +237,7 @@ program hybrid
             
             
                   Ni_tot_1 = Ni_tot+1
-                  Ni_tot_2 = Ni_tot + TD_boundary
+                  Ni_tot_2 = Ni_tot + TD_boundary -1
                   Ni_tot = Ni_tot_2
                   call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,5) !TD at left boundary
             

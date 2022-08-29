@@ -287,11 +287,9 @@ module gutsp
 	
                   call get_pindex(i,j,k,l)
 
-                  if (j+1 < 1) then
-                        write(*,*) 'j+1,l',j+1,l
+                  if (j < 1) then
+                        write(*,*) 'j,l',j,l
                   endif
-                 ! write(*,*) 'qy(j)', qy(j)
-                  !write(*,*) 'qy(j+1)',qy(j+1)
 
                   vol = 1.0/((qx(i+1)-qx(i))*(qy(j+1)-qy(j))*(qz(k+1)-qz(k)))
 
