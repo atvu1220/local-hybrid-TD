@@ -5,7 +5,8 @@ module initial
 	contains
       
 	subroutine grd6_setup(b0,bt,b12,b1,b1p2,nu,input_Eb)
-		use inputs, only: q, mO, PI, b0_init, nu_init, km_to_m, mu0,dx,dy,delz, ddthickness, pi, dx_frac, magneticShear,ByConeAngle, boundx
+		use inputs, only: q, mO, PI, b0_init, nu_init, km_to_m, mu0,dx,dy,delz, pi, dx_frac, &
+			ddthickness, magneticShear,ByConeAngle, boundx, quasiparallel
 		use grid, only: dx_cell, dy_cell, dz_cell,qx,qy,qz
 		implicit none
 		real, intent(out):: b0(nx,ny,nz,3), &
@@ -20,16 +21,20 @@ module initial
 		real:: b0_1x, b0_2x, b0_1y, b0_2y, phi, dtheta
 		integer:: i,j,k,m,Bsetup
 		
-		if (ByConeAngle .gt. 1.0) then
-			Bsetup= 15
-			if (boundx .eq. 5) then	
-				Bsetup = 17 !2 TD, reflecting, periodic
+		if (quasiparallel .eq. 1) then
+			if (ByConeAngle .gt. 1.0) then
+				Bsetup= 15
+				if (boundx .eq. 5) then	
+					Bsetup = 17 !2 TD, reflecting, periodic
+				endif
+			else	
+				Bsetup= 8
+				if (boundx .eq. 5) then
+					Bsetup = 16 !2 TD, reflecting, periodic
+				endif
 			endif
-		else	
-			Bsetup= 8
-			if (boundx .eq. 5) then
-				Bsetup = 16 !2 TD, reflecting, periodic
-			endif
+		elseif (quasiparallel .eq. 2) then
+			Bsetup = 21
 		endif
 		
 		!Bsetup = 18
@@ -59,9 +64,11 @@ module initial
 							endif
 							if (k .gt. nz/2) then !BL top
 								b0(i,j,k,1) = b0(i,j,k,1) - &
-									(cos(magneticShear/180.0*pi/2) - cos(magneticShear/180.0*pi)   ) * b0_init*eoverm*0.5*tanh( (qz(k)-qz(nz/2) )/(ddthickness*delz))
+									(cos(magneticShear/180.0*pi/2) - cos(magneticShear/180.0*pi)   ) * b0_init*eoverm*0.5* &
+									tanh( (qz(k)-qz(nz/2) )/(ddthickness*delz))
 								b0(i,j,k,2) = (b0(i,j,k,2) - &
-									(sin(magneticShear/180.0*pi) - sin(magneticShear/180.0*pi/2.0) ) * b0_init*eoverm*0.5*tanh( (qz(k)-qz(nz/2) )/(ddthickness*delz)))
+									(sin(magneticShear/180.0*pi) - sin(magneticShear/180.0*pi/2.0) ) * b0_init*eoverm*0.5* &
+									tanh( (qz(k)-qz(nz/2) )/(ddthickness*delz)))
 								b0(i,j,k,3) = 0.0
 							endif
 						endif
@@ -130,10 +137,12 @@ module initial
 								if (k .lt. 2*nz/3) then !BL bottom
 									b0(i,j,k,1) = b0(i,j,k,1) - &
 										( sin(magneticShear/180.0*pi/2.0) ) * &
-										b0_init*eoverm*0.5*tanh( ( qz(2*nz/3)-qz(k))/(ddthickness*delz))
+										b0_init*eoverm*0.5* &
+										tanh( ( qz(2*nz/3)-qz(k))/(ddthickness*delz))
 									b0(i,j,k,2) = b0(i,j,k,2) + &
 										(cos(0.0) - cos(magneticShear/180.0*pi/2.0) ) * &
-										b0_init*eoverm*0.5*tanh( ( qz(2*nz/3)-qz(k))/(ddthickness*delz))
+										b0_init*eoverm*0.5* &
+										tanh( ( qz(2*nz/3)-qz(k))/(ddthickness*delz))
 									b0(i,j,k,3) = 0.0
 								endif
 							endif
@@ -201,6 +210,29 @@ module initial
 
 						endif
 					
+
+
+
+						if (Bsetup .eq. 21) then !Bot -By, Top +By, double Qpara
+							if (k .le. nz/2.0) then !BL bottom 
+								b0(i,j,k,1) =  2*(cos(ByConeAngle/180.0*pi))*0.25*b0_init*eoverm
+								b0(i,j,k,2) =  -(sin(ByConeAngle/180.0*pi)+&
+									sin((ByConeAngle-2*ByConeAngle)/180.0*pi))*0.25*b0_init*eoverm + &
+									(-sin(ByConeAngle/180.0*pi)+sin((ByConeAngle-2*ByConeAngle)/180.0*pi))*b0_init*eoverm*&
+									0.25*tanh( ( qz(nz/2)-qz(k))/(ddthickness*delz))
+								b0(i,j,k,3) = 0.0
+				  			endif
+				  			if (k .gt. nz/2.0) then !BL top
+								b0(i,j,k,1) =  2*(cos(ByConeAngle/180.0*pi))*0.25*b0_init*eoverm
+								b0(i,j,k,2) =   (sin(ByConeAngle/180.0*pi)+ &
+									sin((ByConeAngle-2*ByConeAngle)/180.0*pi))*0.25*b0_init*eoverm + &
+									(sin(ByConeAngle/180.0*pi)-sin((ByConeAngle-2*ByConeAngle)/180.0*pi))*b0_init*eoverm*&
+									0.25*tanh( (qz(k)-qz(nz/2) )/(ddthickness*delz))
+								b0(i,j,k,3) = 0.0
+				  			endif
+						endif	
+
+
 					enddo
 				enddo
 		enddo

@@ -6,7 +6,7 @@ module gutsp
 ! Removes particles from the simulation that have gone out of bounds
             use dimensions
             use inputs, only: km_to_m
-            use var_arrays, only: xp,vp,vp1,Ni_tot,input_E,ijkp,beta,beta_p,m_arr,mrat,wght,mix_ind,vplus,vminus
+            use var_arrays, only: xp,vp,vp1,Ni_tot,input_E,ijkp,beta,beta_p,m_arr,wght,mix_ind,vplus,vminus
             implicit none
             integer, intent(in):: ion_l
             integer:: l,m,tl
@@ -27,7 +27,6 @@ module gutsp
                   enddo
                   beta_p(l) = beta_p(l+1)
                   m_arr(l) = m_arr(l+1)
-                  mrat(l) = mrat(l+1)
                   mix_ind(l) = mix_ind(l+1)
                 
             enddo
@@ -67,7 +66,7 @@ module gutsp
       subroutine get_Ep()
             use dimensions
             use grid_interp
-            use var_arrays, only: Ep,aj,up,btc,Ni_tot,ijkp,mrat,wght, gradP,xp,vp,np
+            use var_arrays, only: Ep,aj,up,btc,Ni_tot,ijkp,wght, gradP,xp,vp,np
             use inputs, only: mion
             implicit none
             real:: ajc(nx,ny,nz,3), &     !aj at cell center
@@ -137,10 +136,8 @@ module gutsp
                   
                   do m=1,2
                         Ep(l,m) = cc(m) - gradP3(m) !add in electron pressure term
-                        Ep(l,m) = Ep(l,m) * mrat(l)
                   enddo
                   Ep(l,3) = cc(3) - gradP3(3) !add in electron pressure term
-                  Ep(l,3) = Ep(l,3) * mrat(l)
                   
             enddo
             
@@ -150,7 +147,7 @@ module gutsp
       subroutine get_vplus_vminus()
             use dimensions
             use inputs, only: dt
-            use var_arrays, only: Ep,btc,vp,vplus,vminus,Ni_tot,ijkp,mrat,wght
+            use var_arrays, only: Ep,btc,vp,vplus,vminus,Ni_tot,ijkp,wght
             implicit none
             real:: a1,a2,a3,a_d,B2,dt2,Bx,By,Bz,vminus_x_B(3),vminus_dot_B,btc3(3)
             integer:: l,i,j,k,ip,jp,kp,m
@@ -181,20 +178,20 @@ module gutsp
                               + btc(ip,jp,kp,m)*wght(l,8) 
                   enddo
                   
-                  vminus_x_B(1) = vminus(l,2)*btc3(3)*mrat(l) - &
-                        vminus(l,3)*btc3(2)*mrat(l)   
-                  vminus_x_B(2) = vminus(l,3)*btc3(1)*mrat(l) - &
-                        vminus(l,1)*btc3(3)*mrat(l)   
-                  vminus_x_B(3) = vminus(l,1)*btc3(2)*mrat(l) - &
-                        vminus(l,2)*btc3(1)*mrat(l)   
+                  vminus_x_B(1) = vminus(l,2)*btc3(3) - &
+                        vminus(l,3)*btc3(2) 
+                  vminus_x_B(2) = vminus(l,3)*btc3(1) - &
+                        vminus(l,1)*btc3(3)   
+                  vminus_x_B(3) = vminus(l,1)*btc3(2) - &
+                        vminus(l,2)*btc3(1)  
 
-                  vminus_dot_B = vminus(l,1)*btc3(1)*mrat(l) + &
-                        vminus(l,2)*btc3(2)*mrat(l) + &
-                        vminus(l,3)*btc3(3)*mrat(l)   
+                  vminus_dot_B = vminus(l,1)*btc3(1) + &
+                        vminus(l,2)*btc3(2) + &
+                        vminus(l,3)*btc3(3) 
 
-                  Bx = btc3(1)*mrat(l) 
-                  By = btc3(2)*mrat(l) 
-                  Bz = btc3(3)*mrat(l) 
+                  Bx = btc3(1)
+                  By = btc3(2)
+                  Bz = btc3(3)
       
                   B2 = Bx*Bx + By*By + Bz*Bz
                   dt2 = dt*dt
@@ -206,7 +203,7 @@ module gutsp
                   
                   do m=1,3
                         vplus(l,m) = a1*vminus(l,m) + a2*vminus_x_B(m) + &
-                              a3*vminus_dot_B*btc3(m)*mrat(l)
+                              a3*vminus_dot_B*btc3(m)
                   enddo
             enddo
             
@@ -256,7 +253,7 @@ module gutsp
             use boundary
             use inputs, only: dt,boundx
             use grid, only: qx,qy,qz
-            use var_arrays, only: xp,vp,Ni_tot!, ijkp,vp1, beta_p,m_arr,mrat,mix_ind
+            use var_arrays, only: xp,vp,Ni_tot!, ijkp,vp1, beta_p,m_arr,mix_ind
             implicit none
             real:: dth
             integer:: l!, newParticles
@@ -289,7 +286,13 @@ module gutsp
             do l=1, Ni_tot
 	
                   call get_pindex(i,j,k,l)
-      
+
+                  if (j+1 < 1) then
+                        write(*,*) 'j+1,l',j+1,l
+                  endif
+                 ! write(*,*) 'qy(j)', qy(j)
+                  !write(*,*) 'qy(j+1)',qy(j+1)
+
                   vol = 1.0/((qx(i+1)-qx(i))*(qy(j+1)-qy(j))*(qz(k+1)-qz(k)))
 
                   x1=abs(xp(l,1)-qx(i))
@@ -379,7 +382,7 @@ module gutsp
             use boundary
             use inputs, only: mion
             use grid, only: qx,qy,qz
-            use var_arrays, only: mnp,Ni_tot,ijkp,beta,beta_p,mrat,wght
+            use var_arrays, only: mnp,Ni_tot,ijkp,beta,beta_p,wght
             implicit none
             real:: volb, recvbuf(nx*ny*nz)
             integer:: i,j,k,l,ip,jp,kp,count,ierr
@@ -405,14 +408,14 @@ module gutsp
                   
                   volb = (qx(ip)-qx(i))*(qy(jp)-qy(j))*(qz(kp)-qz(k))*beta*beta_p(l)
                   
-                  mnp(i,j,k) = mnp(i,j,k) + (wght(l,1)/mrat(l))/volb
-                  mnp(ip,j,k) = mnp(ip,j,k) + (wght(l,2)/mrat(l))/volb
-                  mnp(i,j,kp) = mnp(i,j,kp) + (wght(l,3)/mrat(l))/volb
-                  mnp(ip,j,kp) = mnp(ip,j,kp) + (wght(l,4)/mrat(l))/volb
-                  mnp(i,jp,k) = mnp(i,jp,k) + (wght(l,5)/mrat(l))/volb
-                  mnp(ip,jp,k) = mnp(ip,jp,k) + (wght(l,6)/mrat(l))/volb
-                  mnp(i,jp,kp) = mnp(i,jp,kp) + (wght(l,7)/mrat(l))/volb
-                  mnp(ip,jp,kp) = mnp(ip,jp,kp) + (wght(l,8)/mrat(l))/volb
+                  mnp(i,j,k) = mnp(i,j,k) + (wght(l,1))/volb
+                  mnp(ip,j,k) = mnp(ip,j,k) + (wght(l,2))/volb
+                  mnp(i,j,kp) = mnp(i,j,kp) + (wght(l,3))/volb
+                  mnp(ip,j,kp) = mnp(ip,j,kp) + (wght(l,4))/volb
+                  mnp(i,jp,k) = mnp(i,jp,k) + (wght(l,5))/volb
+                  mnp(ip,jp,k) = mnp(ip,jp,k) + (wght(l,6))/volb
+                  mnp(i,jp,kp) = mnp(i,jp,kp) + (wght(l,7))/volb
+                  mnp(ip,jp,kp) = mnp(ip,jp,kp) + (wght(l,8))/volb
                   
             enddo
             
@@ -618,7 +621,7 @@ module gutsp
             
             l=1
             do while (l .le. Ni_tot) 
-            	do while (mix_ind(l) .eq. 1)
+            	do while ( (mix_ind(l) .eq. 1) .and. (l .lt. Ni_tot) )
 			      l=l+1
 	            end do
 		      if  (l .ge. Ni_tot) then
@@ -736,7 +739,7 @@ module gutsp
             
             l=1
             do while (l .le. Ni_tot) 
-            	do while (mix_ind(l) .eq. 0)
+            	do while ( (mix_ind(l) .eq. 0) .and. (l .lt. Ni_tot) )
 			      l=l+1
 		      end do
 		      if  (l .ge. Ni_tot) then
@@ -836,7 +839,7 @@ module gutsp
             use boundary
             use inputs, only: mion
             use grid, only: qx,qy,qz
-            use var_arrays, only: vp,np,temp_p,Ni_tot,ijkp,beta,beta_p,mrat,wght,tp
+            use var_arrays, only: vp,np,temp_p,Ni_tot,ijkp,beta,beta_p,wght,tp
             implicit none
             real:: recvbuf(nx*ny*nz*3),up2(nx,ny,nz,3),up_ave(nx,ny,nz,3),ct(nx,ny,nz,3),volb,nvolb,mvp(Ni_max,3)
             integer:: i,j,k,l,m,ip,jp,kp,count,ierr
@@ -848,7 +851,7 @@ module gutsp
             ct(:,:,:,:) = 0.0
             
             do m=1,3
-                  mvp(1:Ni_tot,m) = vp(1:Ni_tot,m)/sqrt(mrat(:))
+                  mvp(1:Ni_tot,m) = vp(1:Ni_tot,m)
             enddo
             
             do l=1,Ni_tot
@@ -1077,7 +1080,7 @@ module gutsp
             l=1
 
             do while (l .le. Ni_tot)
-            	do while (mix_ind(l) .eq. 0)
+            	do while ( (mix_ind(l) .eq. 0) .and. (l .lt. Ni_tot) )
 			      l=l+1
 		      end do			
                   if  (l .ge. Ni_tot) then
@@ -1126,7 +1129,7 @@ subroutine get_temperature_mixed()
             use boundary
             use inputs, only: mion
             use grid, only: qx,qy,qz
-            use var_arrays, only: vp,np_mixed,temp_p_mixed,Ni_tot,ijkp,beta,beta_p,mrat,wght,mix_ind,tp_mixed
+            use var_arrays, only: vp,np_mixed,temp_p_mixed,Ni_tot,ijkp,beta,beta_p,wght,mix_ind,tp_mixed
             implicit none
             real:: recvbuf(nx*ny*nz*3),up2(nx,ny,nz,3),up_ave(nx,ny,nz,3),ct(nx,ny,nz,3),volb,nvolb,mvp(Ni_tot,3)
             integer:: i,j,k,l,m,ip,jp,kp,count,ierr
@@ -1139,13 +1142,13 @@ subroutine get_temperature_mixed()
             
             do l=1,Ni_tot
             	do m=1,3
-                        mvp(l,m) = vp(l,m)/sqrt(mrat(l))
+                        mvp(l,m) = vp(l,m)
                   enddo
             enddo
             
             l=1
             do while (l .le. Ni_tot)
-            	do while (mix_ind(l) .eq. 0)
+            	do while ( (mix_ind(l) .eq. 0) .and. (l .lt. Ni_tot) )
 			      l=l+1
 		      end do
                   if  (l .ge. Ni_tot) then
@@ -1248,7 +1251,7 @@ subroutine get_temperature_mixed()
 
             l=1
             do while (l .le. Ni_tot) 
-            	do while (mix_ind(l) .eq. 0)
+            	do while ( (mix_ind(l) .eq. 0) .and. (l .lt. Ni_tot) )
 			      l=l+1
 		      end do
 		      if  (l .ge. Ni_tot) then
@@ -1388,7 +1391,7 @@ subroutine get_temperature_mixed()
 	      l=1
            
             do while (l .le. Ni_tot)
-            	do while (mix_ind(l) .eq. 1)
+            	do while ( (mix_ind(l) .eq. 1) .and. (l .lt. Ni_tot) )
 			      l=l+1
 		      end do
 		      if  (l .ge. Ni_tot) then
@@ -1437,7 +1440,7 @@ subroutine get_temperature_cold()
             use boundary
             use inputs, only: mion
             use grid, only: qx,qy,qz
-            use var_arrays, only: vp,np_cold,temp_p_cold,Ni_tot,ijkp,beta,beta_p,mrat,wght,mix_ind,tp_cold
+            use var_arrays, only: vp,np_cold,temp_p_cold,Ni_tot,ijkp,beta,beta_p,wght,mix_ind,tp_cold
             implicit none
             real:: recvbuf(nx*ny*nz*3),up2(nx,ny,nz,3),up_ave(nx,ny,nz,3),ct(nx,ny,nz,3),volb,nvolb,mvp(Ni_tot,3)
             integer:: i,j,k,l,m,ip,jp,kp,count,ierr
@@ -1451,13 +1454,13 @@ subroutine get_temperature_cold()
             
             do l=1,Ni_tot
             	do m=1,3
-                        mvp(l,m) = vp(l,m)/sqrt(mrat(l))
+                        mvp(l,m) = vp(l,m)
                   enddo
             enddo
 
             l=1
             do while (l .le. Ni_tot)
-            	do while (mix_ind(l) .eq. 1)
+            	do while ( (mix_ind(l) .eq. 1) .and. (l .lt. Ni_tot) )
 			      l=l+1
 		      end do
 		      if  (l .ge. Ni_tot) then
@@ -1560,7 +1563,7 @@ subroutine get_temperature_cold()
 
             l=1
             do while (l .le. Ni_tot) 
-            	do while (mix_ind(l) .eq. 1)
+            	do while ( (mix_ind(l) .eq. 1) .and. (l .lt. Ni_tot) )
 			      l=l+1
 		      end do
 		      if  (l .ge. Ni_tot) then
@@ -1702,6 +1705,7 @@ subroutine get_temperature_cold()
             enddo
 
             ijkp(l,1)=i
+
             j = floor(xp(l,2)/dy)
             ijkp(l,2) = j
 

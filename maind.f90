@@ -1,6 +1,4 @@
 program hybrid
-      
-      use mpi
       use boundary
       use dimensions
       use Var_Arrays
@@ -14,6 +12,7 @@ program hybrid
       use grid_interp
       use grid
       use iso_fortran_env
+      use mpi
       
       implicit none
 
@@ -85,7 +84,7 @@ program hybrid
       call MPI_BARRIER(MPI_COMM_WORLD,ierr)
     
       !Background Solar Wind
-      call load_foreshock_Maxwellian(vth,1,Ni_tot,mion,1.0,0) !SW
+      call load_foreshock_Maxwellian(vth,1,Ni_tot,mion,0) !SW
   
       !Initial TD, TD center, turn off for real shock 1/28/22
       if (boundx .eq. 4) then
@@ -93,7 +92,7 @@ program hybrid
             TD_initial = procnum*floor(float(int((nx-2)*(ny-2)*TDcellBalance*TDpressureBalance*ppc/procnum))/procnum) !for 15dd, 5.06 for 15dd (30depletionwidth), then divide by two because B drops only 25%, 4.24664 for 15dd (15depletionwidith), 0.283 for 1dd, 2.83 for 20dd, 2.53 for 16dd
             Ni_tot_2 = Ni_tot_1 + TD_initial 
             Ni_tot = Ni_tot_2  
-            call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,1.0,4) !TD
+            call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,4) !TD
       elseif (boundx .eq. 5) then
             !Real Shock, no TD balance
       endif
@@ -180,7 +179,8 @@ program hybrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !Initialize Injection Parameters
       Nx_boundary = floor((nz-2)*(ny-2)*(1)*ppc/procnum)
-      FS_boundary = ((cos(ByConeAngle/180.0*pi)*float(FSBeamWidth))/(nz-2+1*TDcellBalance*TDpressureBalance))*float(Nx_boundary)*int(FSDensityRatio/(100.0/ForeshockBeta))
+      FS_boundary = ((cos(ByConeAngle/180.0*pi)*float(FSBeamWidth))/&
+            (nz-2+1*TDcellBalance*TDpressureBalance))*float(Nx_boundary)*int(FSDensityRatio/(100.0/ForeshockBeta))
       
 
       sw_speed = va_f*(b0_init/sqrt(mu0*mion*nf_init/1e9)/1e3)
@@ -191,8 +191,11 @@ program hybrid
       TD_boundary = floor(TD_initial/float(nx-2)/ ((qx(2)-qx(1))/(sw_speed*dt)))
       
       if (my_rank .eq. 0) then
-            write(*,*) 'Nx_boundary per Time Step, Nx_boundary particles in column', Nx_boundary,4*int((nz-2)*(ny-2)*(1)*ppc/procnum)/4
-            write(*,*) 'FS_boundary, FS_boundary particles in column', FS_boundary,(float(FSBeamWidth)/nz)*float(4*int((nz-2)*(ny-2)*(1)*ppc/procnum)/4)*(FSDensityRatio/(100.0/ForeshockBeta))
+            write(*,*) 'Nx_boundary per Time Step, Nx_boundary particles in column', &
+                  Nx_boundary,4*int((nz-2)*(ny-2)*(1)*ppc/procnum)/4
+            write(*,*) 'FS_boundary, FS_boundary particles in column', &
+                  FS_boundary, &
+                  (float(FSBeamWidth)/nz)*float(4*int((nz-2)*(ny-2)*(1)*ppc/procnum)/4)*(FSDensityRatio/(100.0/ForeshockBeta))
             write(*,*) 'TD_boundary,TD_initial', TD_boundary, TD_initial
             write(*,*) 'sw displacement in one timestep, qxdiff', sw_speed*dt, qx(2)-qx(1)
             write(*,*) 'mpertimestep, rounded', (qx(2)-qx(1))/(sw_speed*dt), sw_delayTime
@@ -229,26 +232,26 @@ program hybrid
                   Ni_tot_1 = Ni_tot+1
                   Ni_tot_2 = Ni_tot + Nx_boundary - 1
                   Ni_tot = Ni_tot_2
-                  call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,1.0,1) !SW at left boundary
+                  call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,1) !SW at left boundary
             
             
                   Ni_tot_1 = Ni_tot+1
                   Ni_tot_2 = Ni_tot + TD_boundary
                   Ni_tot = Ni_tot_2
-                  call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,1.0,5) !TD at left boundary
+                  call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,5) !TD at left boundary
             
-                  if (quasiparallel .eq. 1) then 
-                        Ni_tot_1 = Ni_tot+1
-                        Ni_tot_2 = Ni_tot + FS_boundary - 1
-                        Ni_tot = Ni_tot_2
-                        call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,1.0,2) !FS Bot Right boundary
-                  endif
+                  
+                  Ni_tot_1 = Ni_tot+1
+                  Ni_tot_2 = Ni_tot + FS_boundary - 1
+                  Ni_tot = Ni_tot_2
+                  call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,2) !FS Bot Right boundary
+                  
             
                   if (quasiparallel .eq. 2) then 
                         Ni_tot_1 = Ni_tot+1
                         Ni_tot_2 = Ni_tot + FS_boundary - 1
                         Ni_tot = Ni_tot_2
-                        call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,1.0,6) !FS Top Right Boundary
+                        call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,6) !FS Top Right Boundary
                   endif
             
                   call f_update_tlev(b1,b12,b1p2,bt,b0)  

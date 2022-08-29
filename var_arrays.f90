@@ -25,7 +25,6 @@ module Var_Arrays
                   temp_p(nx,ny,nz), &   !temperature
                   mnp(nx,ny,nz), &      !mass density
                   beta, beta_p(Ni_max), &       !variable for particle scaling
-                  mrat(Ni_max), &       !mass array for mulit-ion species
                   m_arr(Ni_max), &
                   np_t(nx,ny,nz), &
                   np_b(nx,ny,nz), &
