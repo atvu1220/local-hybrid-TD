@@ -19,9 +19,12 @@ module part_init
             real:: eoverm
             integer:: population
             integer:: disp,montecarlo
-            real:: vx, vy, vz, va, pl_beta(nx,ny,nz), fitdist, EvBx, EvBy,EvBz!, &
+            real:: vx, vy, vz, va, fitdist, EvBx, EvBy,EvBz!, &
                   !vxring, vyring, vzring,vring,vr,vtheta
             integer:: l,m,i,j,k
+            real :: pl_beta(nx,ny,nz)
+            !real, allocatable :: pl_beta(:,:,:)
+            !allocate(pl_beta(nx,ny,nz))
 
             disp = 0
             do i=1,nx
@@ -113,7 +116,7 @@ module part_init
                               
                               if ( xp(l,3) .le. qz(nz/2) ) then
                                     fitdist = 1 - 0.5 - 0.5*tanh( (qz(nz/2) - xp(l,3)) / (ddthickness*delz) )
-                              else if ( xp(l,3) .gt. qz(nz/2) ) then
+                              else !if ( xp(l,3) .gt. qz(nz/2) ) then
                                     fitdist = 1 - 0.5 - 0.5*tanh( (xp(l,3)- qz(nz/2)) / (ddthickness*delz) )
                               endif
 
@@ -159,10 +162,10 @@ module part_init
                   else if ((population .eq. 2) .or. (population .eq. 3) .or. (population .eq. 7) .or. (population .eq. 6)) then !Foreshock Ions, Right Edge
                         call get_pindex(i,j,k,l)
 
-                        i=i-1
-                        EvBx = -( ( up(i,j,k,2)*b1(i,j,k,3) - up(i,j,k,3)*b1(i,j,k,2) )  )
-                        EvBy =  ( ( up(i,j,k,1)*b1(i,j,k,3) - up(i,j,k,3)*b1(i,j,k,1) )  )
-                        EvBz = -( ( up(i,j,k,1)*b1(i,j,k,2) - up(i,j,k,2)*b1(i,j,k,1) )  )
+                        
+                        EvBx = -( ( up(i-1,j,k,2)*b1(i-1,j,k,3) - up(i-1,j,k,3)*b1(i-1,j,k,2) )  )
+                        EvBy =  ( ( up(i-1,j,k,1)*b1(i-1,j,k,3) - up(i-1,j,k,3)*b1(i-1,j,k,1) )  )
+                        EvBz = -( ( up(i-1,j,k,1)*b1(i-1,j,k,2) - up(i-1,j,k,2)*b1(i-1,j,k,1) )  )
                                   
                               
                         !Constant solar wind bulk flow for ExB

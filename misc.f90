@@ -87,9 +87,10 @@ module misc
             use grid, only: dx_grid, dy_grid, dz_grid
             use inputs, only: etemp0, mion, kboltz
             implicit none
-            real:: np1,gdnp,a0,etemp,gnpf(nx,ny,nz,3)
+            real:: np1,gdnp,a0,etemp, gnpf(nx,ny,nz,3)
             integer:: i,j,k
-            
+            !real, allocatable :: gnpf(:,:,:,:)
+            !allocate(gnpf(nx,ny,nz,3))
             etemp = etemp0*11604.505  !eV to Kelvin
             do i=2,nx-1
                   do j=2,ny-1

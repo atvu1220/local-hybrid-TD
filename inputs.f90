@@ -13,7 +13,7 @@ module inputs
             
       real, parameter:: amu=1.6605e-27!, mion = 3.841e-26
       integer:: mp, nt, nout, boundx,ddthickness,FSBeamWidth, quasiparallel
-      integer(4):: Ni_tot_0
+      integer:: Ni_tot_0
 
       real, parameter:: q=1.6e-19         !electron charge
 
@@ -117,15 +117,12 @@ module inputs
             
             subroutine initparameters()
                   implicit none
-                  
-                  
-                  
-		  mion = amu*1!3.841e-26
+                  mion = amu*1.0!3.841e-26
                   write(*,*) 'mion...',mion
 
                 !vth is input as the plasma beta
-                vth = sqrt(plasma_beta*B0_init**2/(mu0*mion*nf_init/1e9))/1e3
-                write(*,*) 'vth...',vth
+                  vth = sqrt(plasma_beta*B0_init**2/(mu0*mion*nf_init/1e9))/1e3
+                  write(*,*) 'vth...',vth
                   
                   omega_p = q*b0_init/mion
                   vsw=va_f*vth
@@ -165,7 +162,7 @@ module inputs
                   implicit none
                   integer:: i,j,k
                   
-                  real*8:: ak, btot, a1, a2, womega, phi, deltat, cwpi
+                  real:: ak, btot, a1, a2, womega, phi, deltat, cwpi
                   
       ! Check input paramters
       

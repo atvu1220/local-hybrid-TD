@@ -5,7 +5,7 @@ module gutsf
       subroutine f_update_tlev(b1,b12,b1p2,bt,b0) !loops run 1 o n since values are only being copied
             use dimensions
             use boundary
-            use inputs, only: q, mO,b0_init,pi,ddthickness
+            use inputs, only: q, mO,pi,ddthickness
             use grid
             implicit none
             real, intent(in):: b0(nx,ny,nz,3)
@@ -14,7 +14,6 @@ module gutsf
             
             integer:: i,j,k,m
             real:: eoverm,dtheta!,mPerCell
-            integer:: Bsetup!, zMove
             
             dtheta = 2.0*pi / 4.0 /(2.0*ddthickness)
             
@@ -46,10 +45,13 @@ module gutsf
             implicit none
             real, intent(inout):: aa(nx,ny,nz,3), btc(nx,ny,nz,3)
             real, intent(out):: cc(nx,ny,nz,3)
-            real:: ct(nx,ny,nz,3)
-            real:: ax,ay,az,bx,by,bz
+            real:: ax,ay,az,bx,by,bz, ct(nx,ny,nz,3)
             integer:: i,j,k,ip,jp,kp
-            
+
+            !real, allocatable :: ct(:,:,:,:)
+            !allocate(ct(nx,ny,nz,3))
+
+
             call boundary_vector(aa)
             call boundary_vector(btc)
 
@@ -97,7 +99,7 @@ module gutsf
       end subroutine crossf2
       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      subroutine curlB(b0,b1,np,aj)
+      subroutine curlB(b1,np,aj)
 ! Calculates curl B / n*alpha.  The resulting "current" is called aj
 ! which is used in several other places in the code.  This curl is 
 ! performed on the main cell where B is covarient.  The resulting
@@ -107,11 +109,11 @@ module gutsf
             use dimensions
             use boundary
             use grid, only: dx_cell,dy_cell,dz_cell
-            use inputs, only: alpha,ddthickness
+            use inputs, only: alpha
             use var_arrays, only: curlBcurrent
             implicit none
             real, intent(in):: np(nx,ny,nz)
-            real, intent(inout):: b0(nx,ny,nz,3),b1(nx,ny,nz,3)
+            real, intent(inout):: b1(nx,ny,nz,3)
             real, intent(out) :: aj(nx,ny,nz,3)
             real:: curl_B(3), ntot(3)
             integer:: i,j,k,m,ip,jp,kp
@@ -188,14 +190,19 @@ module gutsf
             use boundary
             use grid_interp
             use var_arrays, only: gradP, ue
-            use inputs, only: mion
             implicit none
             real, intent(in):: up(nx,ny,nz,3), nu(nx,ny,nz)
-            real, intent(inout):: bt(nx,ny,nz,3)
+            real, intent(inout):: aj(nx,ny,nz,3), bt(nx,ny,nz,3)
             real, intent(out):: E(nx,ny,nz,3)
-            real:: aj(nx,ny,nz,3), a(nx,ny,nz,3), c(nx,ny,nz,3), aa(nx,ny,nz,3), btc(nx,ny,nz,3), gradPmf(3)
+            real:: gradPmf(3)
             integer:: i,j,k,m
-            
+            real :: a(nx,ny,nz,3), c(nx,ny,nz,3), aa(nx,ny,nz,3), btc(nx,ny,nz,3)
+            !real, allocatable, dimension(:,:,:,:) :: a, c, aa, btc
+            !allocate(a(nx,ny,nz,3))
+            !allocate(c(nx,ny,nz,3))
+            !allocate(aa(nx,ny,nz,3))
+            !allocate(btc(nx,ny,nz,3))
+
             call face_to_center(aj,aa)
             
             do i=2,nx-1
@@ -231,17 +238,19 @@ module gutsf
       end subroutine get_E
       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      subroutine predict_B(b0,b12,b1p2,bt,E,aj,up,nu,dtsub)
+      subroutine predict_B(b12,b1p2,bt,E,aj,up,nu,dtsub)
 ! Predictor step in magnetic field update
             use dimensions
             use boundary
             implicit none
-            real, intent(in):: b0(nx,ny,nz,3), b12(nx,ny,nz,3), aj(nx,ny,nz,3),up(nx,ny,nz,3),nu(nx,ny,nz),dtsub
-            real, intent(inout):: bt(nx,ny,nz,3)
+            real, intent(in):: b12(nx,ny,nz,3),up(nx,ny,nz,3),nu(nx,ny,nz),dtsub
+            real, intent(inout):: aj(nx,ny,nz,3), bt(nx,ny,nz,3)
             real, intent(out):: b1p2(nx,ny,nz,3), E(nx,ny,nz,3)
-            real:: curl_E(nx,ny,nz,3)
             integer:: i,j,k,m
-            
+            real :: curl_E(nx,ny,nz,3)
+            !real, allocatable :: curl_E(:,:,:,:)
+            !allocate(curl_E(nx,ny,nz,3))
+
             call get_E(E,bt,aj,up,nu)
             call curlE(E,curl_E)
             
@@ -260,7 +269,7 @@ module gutsf
       end subroutine predict_B
       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      subroutine get_Ep1(E,b0,b1,b1p2,aj,up,np,nu)
+      subroutine get_Ep1(E,b1,b1p2,aj,up,np,nu)
 ! The main feature here is that E must be calculated at time level
 ! m + 1/2.  That means that we need B at m + 1/2.  So b1p1 is
 ! calculated as 0.5*(b1 + b1p2).  uf and np are already at time level
@@ -269,18 +278,20 @@ module gutsf
             use grid_interp
             use boundary
             use var_arrays, only: gradP
-            use inputs, only: mion
             implicit none
             real, intent(in):: b1(nx,ny,nz,3), b1p2(nx,ny,nz,3), up(nx,ny,nz,3), nu(nx,ny,nz), &
                                np(nx,ny,nz)
             real, intent(out):: E(nx,ny,nz,3), aj(nx,ny,nz,3)
-            real,intent(inout):: b0(nx,ny,nz,3)
-            real:: b1p1(nx,ny,nz,3), &          !b1 at time level m+1/2
-!                   btp1(nx,ny,nz,3), &          !bt at time level m+1/2
-!                   btp1mf(nx,ny,nz,3), &        !btp1 at contravariant position
-                   btc(nx,ny,nz,3), a(nx,ny,nz,3), aa(nx,ny,nz,3), c(nx,ny,nz,3), gradPmf(3)
             integer:: i,j,k,m
-            
+            real :: gradPmf(3)
+            real :: b1p1(nx,ny,nz,3), btc(nx,ny,nz,3), a(nx,ny,nz,3), aa(nx,ny,nz,3), c(nx,ny,nz,3)
+            !real, allocatable, dimension(:,:,:,:) :: b1p1, btc, a, aa, c
+            !allocate(b1p1(nx,ny,nz,3))
+            !allocate(btc(nx,ny,nz,3))
+            !allocate(a(nx,ny,nz,3))
+            !allocate(aa(nx,ny,nz,3))
+            !allocate(c(nx,ny,nz,3))
+
             do i=1,nx
                   do j=1,ny
                         do k=1,nz
@@ -291,7 +302,7 @@ module gutsf
                   enddo
             enddo
             
-            call curlB(b0,b1p1,np,aj)
+            call curlB(b1p1,np,aj)
             call face_to_center(aj,aa)
 
              do m=1,3
@@ -327,19 +338,21 @@ module gutsf
       end subroutine get_Ep1
       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      subroutine correct_B(b0,b1,b1p2,E,aj,up,np,nu,dtsub)
+      subroutine correct_B(b1,b1p2,E,aj,up,np,nu,dtsub)
 ! Corrector step in magnetic field update
             use dimensions
             use boundary
             use inputs, only: lww1,lww2
             implicit none
             real, intent(in):: up(nx,ny,nz,3),np(nx,ny,nz),nu(nx,ny,nz),dtsub
-            real, intent(inout)::  b0(nx,ny,nz,3), b1(nx,ny,nz,3),b1p2(nx,ny,nz,3)
+            real, intent(inout)::  b1(nx,ny,nz,3),b1p2(nx,ny,nz,3)
             real, intent(out):: E(nx,ny,nz,3),aj(nx,ny,nz,3)
-            real:: curl_E(nx,ny,nz,3)
             integer:: i,j,k,m
-            
-            call get_Ep1(E,b0,b1,b1p2,aj,up,np,nu) !E at time level m
+            real :: curl_E(nx,ny,nz,3)
+            !real, allocatable :: curl_E(:,:,:,:)
+            !allocate(curl_E(nx,ny,nz,3))
+
+            call get_Ep1(E,b1,b1p2,aj,up,np,nu) !E at time level m
             call curlE(E,curl_E)
             
             do i=2,nx-1
@@ -368,7 +381,7 @@ module gutsf
       subroutine check_time_step(bt,np,dtsub,ntf)
             use dimensions
             use grid, only: dz_grid
-            use inputs, only: dx,alpha
+            use inputs, only: alpha
             implicit none
             real, intent(in):: bt(nx,ny,nz,3), np(nx,ny,nz)
             integer, intent(inout):: ntf
@@ -392,7 +405,7 @@ module gutsf
                               if(deltat .le. 2.0*dtsub) then 
                                     write(*,*) 'time stepping error...',i,j,k
                                     dtsub = dtsub/2.0
-                                    ntf = ntf*2.0
+                                    ntf = ntf*2
                               endif
                         enddo
                   enddo

@@ -17,19 +17,18 @@ program hybrid
       
       implicit none
 
-      real:: Evp,Euf,EB1,EB1x,EB1y,EB1z,EE,EeP,input_EeP,vB0x,vB0y,vB0z, eoverm, mO_q,b0eoverm,phi
+      real:: Evp,Euf,EB1,EB1x,EB1y,EB1z,EE,EeP,input_EeP
       real:: input_chex, input_bill,dtsub
       real:: puf(3),peb(3)
       character(2):: filenum!(16) !max 16 processors
-      character(1):: mstart
       integer:: ierr,t1,t2,cnt_rt,m,ndiag,seed,ndiag_part
       real(8):: time
       integer(4):: Ni_tot_sw, Ni_tot_1,Ni_tot_2
-      integer:: i,j,k,n,ntf,mm,tl,l !looping indicies
-      integer:: N_1, N_2, Nx_boundary, sw_delayTime, FS_boundary, FS_initial, TD_initial,TD_boundary, TD_procCount, TD_procRand
+      integer:: n,ntf,l !looping indicies
+      integer(4):: Nx_boundary, sw_delayTime, FS_boundary, FS_initial, TD_initial,TD_boundary
       real (real64) :: dp
       integer, parameter :: dp_kind = kind(dp)
-      real::va_x, sw_speed
+      real::sw_speed
       
 
       call readInputs()
@@ -169,7 +168,7 @@ program hybrid
       endif
        
       if (my_rank .gt. 0) then !for Subsequent threads
-       	open(120,file=trim(out_dir)//'c.mixed_'//trim(filenum)//'.dat',status='unknown',form='unformatted')
+            open(120,file=trim(out_dir)//'c.mixed_'//trim(filenum)//'.dat',status='unknown',form='unformatted')
             open(305,file=trim(out_dir)//'c.xp_'//trim(filenum)//'.dat',status='unknown',form='unformatted')
             open(310,file=trim(out_dir)//'c.vp_'//trim(filenum)//'.dat',status='unknown',form='unformatted')
             !open(315,file=trim(out_dir)//'c.gradP_'//trim(filenum)//'_'//trim(mstart)//'.dat',status='unknown',form='unformatted')
@@ -180,12 +179,12 @@ program hybrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !Initialize Injection Parameters
       Nx_boundary = floor((nz-2)*(ny-2)*(1)*ppc/procnum)
-      FS_boundary = ((cos(ByConeAngle/180.0*pi)*float(FSBeamWidth))/&
-            (nz-2+1*TDcellBalance))*float(Nx_boundary)*int(FSDensityRatio/(100.0/ForeshockBeta))
+      FS_boundary = int(((cos(ByConeAngle/180.0*pi)*float(FSBeamWidth))/&
+            (nz-2+1*TDcellBalance))*float(Nx_boundary)*(FSDensityRatio/(100.0/ForeshockBeta)))
       
 
       sw_speed = va_f*(b0_init/sqrt(mu0*mion*nf_init/1e9)/1e3)
-      sw_delayTime = ((qx(2)-qx(1))/(sw_speed*dt))
+      sw_delayTime = int((qx(2)-qx(1))/(sw_speed*dt))
 
       Nx_boundary = floor(Nx_boundary/ ((qx(2)-qx(1))/(sw_speed*dt)))
       FS_boundary = floor(FSDriftSpeed*FS_boundary/ ((qx(2)-qx(1))/(sw_speed*dt)))
@@ -219,13 +218,26 @@ program hybrid
 
             call update_up(vp) !up at n+1/2
 
+!safe for vplus
             call get_gradP()
+!safe for vplus
+            call curlB(bt,np,aj)
 
-            call curlB(b0,bt,np,aj)
             call edge_to_center(bt,btc)
             call extrapol_up()
+!safe for vplus
+            !do l=1, Ni_tot
+            !      if (isnan(xp(l,1)) .or. isnan(xp(l,2)) .or. isnan(xp(l,3)) .or. &
+            !      isnan(vp(l,1)) .or. isnan(vp(l,2)) .or. isnan(vp(l,3)) .or. &
+            !      isnan(Ep(l,1)) .or. isnan(Ep(l,2)) .or. isnan(Ep(l,3)) .or. &
+            !      isnan(vplus(l,1)) .or. isnan(vplus(l,2)) .or. isnan(vplus(l,3)) .or. &
+            !      isnan(vminus(l,1)) .or. isnan(vminus(l,2)) .or. isnan(vminus(l,3)) ) then
+            !            write(*,*) 'j,j+1,l,xp(l,2),dy',j,j+1,l,xp(l,1),xp(l,2),xp(l,3), vp(l,1), vp(l,2),vp(l,3), &
+            !            Ep(l,1),Ep(l,2),Ep(l,3), vplus(l,1), vplus(l,2),vplus(l,3), vminus(l,1),vminus(l,2),vminus(l,3)
+            !      endif
+            !enddo
             call get_Ep()
-      
+!safe for vplus
 
             !Injection when previously injected ions move out of cell.
             if (m .gt. 0.5*sw_delayTime ) then
@@ -259,31 +271,53 @@ program hybrid
             
             endif
 
-
+!safe for vplus
             call get_interp_weights()
-
+!safe for vplus
             call update_np()                  !np at n+1/2
 
             call update_up(vp)            !up at n+1/2
 
             call get_gradP()
  
-            call curlB(b0,bt,np,aj)
-            call edge_to_center(bt,btc)
-            call extrapol_up()
-            call get_Ep()
+            call curlB(bt,np,aj)
+!safe for vplus and Ep
 
+
+            call edge_to_center(bt,btc)
+            do l=1, Ni_tot
+                  if (isnan(vplus(l,1)) .or. isnan(vplus(l,2)) .or. isnan(vplus(l,3)) .or. &
+                      isnan(Ep(l,1)) .or. isnan(Ep(l,2)) .or. isnan(Ep(l,3)) ) then
+                        write(*,*) 'xp(l,2),dy',xp(l,1),xp(l,2),xp(l,3), vp1(l,1), vp1(l,2),vp1(l,3), &
+                        Ep(l,1),Ep(l,2),Ep(l,3), vplus(l,1), vplus(l,2),vplus(l,3), vminus(l,1),vminus(l,2),vminus(l,3)
+                  endif
+            enddo
+
+            call extrapol_up()
+!bad for Ep
+            call get_Ep()
+!safe for vplus
             
             call get_vplus_vminus()
             call improve_up()
 
+            
+!vplus is bad
             call get_Ep()
-         
+   
+!vplus is bad
+
             call get_vplus_vminus()
+!vplus is bad
+
+
             call get_vp_final()
 
-            call move_ion_half() !1/2 step ion move to n+1/2
 
+!bad, vp is bad
+            call move_ion_half() !1/2 step ion move to n+1/2
+!bad
+            
             call get_interp_weights()
 
             call update_np() !np at n+1/2
@@ -301,11 +335,11 @@ program hybrid
             call check_time_step(bt,np,dtsub,ntf)
             
             do n=1,ntf
-                  call curlB(b0,bt,np,aj)
+                  call curlB(bt,np,aj)
                   
-                  call predict_B(b0,b12,b1p2,bt,E,aj,up,nu,dtsub)
+                  call predict_B(b12,b1p2,bt,E,aj,up,nu,dtsub)
                   
-                  call correct_B(b0,b1,b1p2,E,aj,up,np,nu,dtsub)
+                  call correct_B(b1,b1p2,E,aj,up,np,nu,dtsub)
 
                   call f_update_tlev(b1,b12,b1p2,bt,b0)
                   
@@ -351,7 +385,7 @@ program hybrid
 
  
                   if (my_rank .eq. 0) then
-                  	call face_to_center(E,Ec)
+                        call face_to_center(E,Ec)
 
                         write(110) m
                         write(110) np

@@ -9,9 +9,10 @@ module grid_interp
             implicit none
             real, intent(inout):: bt(nx,ny,nz,3)
             real, intent(out):: btc(nx,ny,nz,3)
-            real:: b1,b2, btmf(nx,ny,nz,3)
+            real:: b1,b2
             integer:: i,j,k,im,jm,km, ip, jp, kp
-            
+            real, allocatable :: btmf(:,:,:,:)
+            allocate(btmf(nx,ny,nz,3))
             call boundary_vector(bt)
 !            call periodic(bt)
             
@@ -75,9 +76,10 @@ module grid_interp
             implicit none
             real, intent(inout):: bt(nx,ny,nz,3)
             real, intent(out):: btmf(nx,ny,nz,3)
-            real:: btc(nx,ny,nz,3),b1,b2
+            real:: b1,b2, btc(nx,ny,nz,3)
             integer:: i,j,k,im,jm,km
-            
+            !real, allocatable :: btc(:,:,:,:)
+            !allocate(btc(nx,ny,nz,3))
             call boundary_vector(bt)
 !            call periodic(bt)
             
