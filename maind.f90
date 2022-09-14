@@ -179,7 +179,7 @@ program hybrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !Initialize Injection Parameters
       Nx_boundary = floor((nz-2)*(ny-2)*(1)*ppc/procnum)
-      FS_boundary = int(((cos(ByConeAngle/180.0*pi)*float(FSBeamWidth))/&
+      FS_boundary = (((cos(ByConeAngle/180.0*pi)*float(FSBeamWidth))/&
             (nz-2+1*TDcellBalance))*float(Nx_boundary)*(FSDensityRatio/(100.0/ForeshockBeta)))
       
 
@@ -200,7 +200,6 @@ program hybrid
             write(*,*) 'sw displacement in one timestep, qxdiff', sw_speed*dt, qx(2)-qx(1)
             write(*,*) 'mpertimestep, rounded', (qx(2)-qx(1))/(sw_speed*dt), sw_delayTime
             write(*,*) 'Processor Count', procnum
-            write(*,*) 'FS_initial', FS_initial,(nz-2)*(nx-2)*(ny-2)
             write(*,*) '  '
       endif
 
@@ -218,26 +217,15 @@ program hybrid
 
             call update_up(vp) !up at n+1/2
 
-!safe for vplus
             call get_gradP()
-!safe for vplus
+
             call curlB(bt,np,aj)
 
             call edge_to_center(bt,btc)
             call extrapol_up()
-!safe for vplus
-            !do l=1, Ni_tot
-            !      if (isnan(xp(l,1)) .or. isnan(xp(l,2)) .or. isnan(xp(l,3)) .or. &
-            !      isnan(vp(l,1)) .or. isnan(vp(l,2)) .or. isnan(vp(l,3)) .or. &
-            !      isnan(Ep(l,1)) .or. isnan(Ep(l,2)) .or. isnan(Ep(l,3)) .or. &
-            !      isnan(vplus(l,1)) .or. isnan(vplus(l,2)) .or. isnan(vplus(l,3)) .or. &
-            !      isnan(vminus(l,1)) .or. isnan(vminus(l,2)) .or. isnan(vminus(l,3)) ) then
-            !            write(*,*) 'j,j+1,l,xp(l,2),dy',j,j+1,l,xp(l,1),xp(l,2),xp(l,3), vp(l,1), vp(l,2),vp(l,3), &
-            !            Ep(l,1),Ep(l,2),Ep(l,3), vplus(l,1), vplus(l,2),vplus(l,3), vminus(l,1),vminus(l,2),vminus(l,3)
-            !      endif
-            !enddo
+
             call get_Ep()
-!safe for vplus
+
 
             !Injection when previously injected ions move out of cell.
             if (m .gt. 0.5*sw_delayTime ) then
@@ -271,9 +259,11 @@ program hybrid
             
             endif
 
-!safe for vplus
+
+
             call get_interp_weights()
-!safe for vplus
+
+
             call update_np()                  !np at n+1/2
 
             call update_up(vp)            !up at n+1/2
@@ -281,43 +271,35 @@ program hybrid
             call get_gradP()
  
             call curlB(bt,np,aj)
-!safe for vplus and Ep
+
 
 
             call edge_to_center(bt,btc)
-            do l=1, Ni_tot
-                  if (isnan(vplus(l,1)) .or. isnan(vplus(l,2)) .or. isnan(vplus(l,3)) .or. &
-                      isnan(Ep(l,1)) .or. isnan(Ep(l,2)) .or. isnan(Ep(l,3)) ) then
-                        write(*,*) 'xp(l,2),dy',xp(l,1),xp(l,2),xp(l,3), vp1(l,1), vp1(l,2),vp1(l,3), &
-                        Ep(l,1),Ep(l,2),Ep(l,3), vplus(l,1), vplus(l,2),vplus(l,3), vminus(l,1),vminus(l,2),vminus(l,3)
-                  endif
-            enddo
+
 
             call extrapol_up()
-!bad for Ep
+
             call get_Ep()
-!safe for vplus
+
             
             call get_vplus_vminus()
             call improve_up()
 
             
-!vplus is bad
+
             call get_Ep()
    
-!vplus is bad
+
 
             call get_vplus_vminus()
-!vplus is bad
 
 
             call get_vp_final()
 
 
-!bad, vp is bad
+
             call move_ion_half() !1/2 step ion move to n+1/2
-!bad
-            
+
             call get_interp_weights()
 
             call update_np() !np at n+1/2
@@ -439,7 +421,7 @@ program hybrid
             endif
 
                   !Output Dist data
-              if (ndiag_part .eq. nout*10) then
+              if (ndiag_part .eq. nout) then
                    if (my_rank .ge. 0) then
                         write(120) m
                         write(120) mix_ind

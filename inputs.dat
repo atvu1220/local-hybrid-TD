@@ -7,7 +7,7 @@
 1.0                  				!Plasma beta - Determines thermal speed for Maxwellian
 1.0                   				!grid size as fraction of lambda_i
 0.0025		      				    !nu_init_frac, fraction of gyrofrequency for nu_init (0.0025)
-128                   				!number of particles per cell
+144                   				!number of particles per cell
 0.0                				    !electron temperature (eV)
 4                     				!Boundary condition (1: fully periodic   2: Periodic on xy   4:periodic on y   5: periodic on yz)
 2       					        !Discontinuity half-thickness, in lambda_i
@@ -17,5 +17,5 @@
 2.0   						        !Foreshock Drift Speed, multiplied by SW flow speed in V_A
 90.0						        !Magnetic Shear Angle across Harris Current Sheet
 2						            !Number of Quasi-parallel sides.
-15.0						        !By Cone Angle, 15.0, 30.0 only
-'/home/andrew/Documents/Run1/'      !output directory
+30.0						        !By Cone Angle, 15.0, 30.0 only
+'/home/andrew/Documents/Run2/'      !output directory

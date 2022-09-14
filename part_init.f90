@@ -12,7 +12,7 @@ module part_init
             ddthickness, plasma_beta,FSBeamWidth, FSThermalRatio,ddthickness,FSDriftSpeed,ForeshockBeta
             use grid, only: qx,qy,qz
             use gutsp
-            use var_arrays, only: vp,vp1,xp,up,m_arr,beta_p,mix_ind,b0, b1
+            use var_arrays, only: vp,vp1,xp,up,m_arr,beta_p,mix_ind,b0, b1, ijkp
             implicit none
             integer(4), intent(in):: Ni_tot_1, Ni_tot_2
             real, intent(in):: mass, vth
@@ -51,7 +51,7 @@ module part_init
                                                 
                   else if (population .eq. 2 .or. population .eq. 6) then !Foreshock Right
                   
-                        mix_ind(l) = 1
+                       
                         xp(l,1) = qx(nx-1)+(1.0-pad_ranf())*(qx(2)-qx(1))
                         ! xp(l,1) = (1.0-pad_ranf())*(qx(1))!+qx(1)
                         !xp(l,1) = (1.0-pad_ranf())*(qx(1))!+qx(1))
@@ -64,7 +64,7 @@ module part_init
                         
                   else if (population .eq. 3) then !Foreshock, initial Beam
                   
-                        mix_ind(l) = 1
+                        !mix_ind(l) = 1
                         !xp(l,1) = qx(nx/2 - nx/5)+(1.0-pad_ranf())*(qx(nx)-qx(nx/2-nx/5))
                         !xp(l,1) = qx(nx/2)+(1.0-pad_ranf())*(qx(nx)-qx(nx/2))
                         !xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1))
@@ -90,14 +90,17 @@ module part_init
                   if ((population .eq. 2) .or. (population .eq. 7) .or. (population .eq. 3) ) then !Lower Beam
                         !Foreshock ions within TD have slower Vx.
                         if ((population .eq. 2) .or. (population .eq. 7)) then
-                        montecarlo = 0
+                              mix_ind(l) = 1
+                              montecarlo = 0
                         
                               do 22 while (montecarlo .eq. 0)
                               
                                     xp(l,3) = qz((nz)/2) - qz(1)*FSBeamWidth +(1.0-pad_ranf())*(qz(1)*FSBeamWidth)
 
-                                    call get_pindex(i,j,k,l)
-                                    
+                                    call get_pindex(l)
+                                    i=ijkp(l,1)
+                                    j=ijkp(l,2)
+                                    k=ijkp(l,3)
                                     fitdist= b0(i,j,k,1)/ &
                                     sqrt( b0(i,j,k,1)**2+b0(i,j,k,2)**2+b0(i,j,k,3)**2 )
                                     
@@ -125,11 +128,14 @@ module part_init
                         20 continue
                         
                   else if (population .eq. 6) then !Upper Beam
+                        mix_ind(l) = 2
                         montecarlo = 0
                         do 23 while (montecarlo .eq. 0)
                               xp(l,3) = qz((nz)/2) + qz(1)*FSBeamWidth -(1.0-pad_ranf())*(qz(1)*FSBeamWidth)
-                              call get_pindex(i,j,k,l)
-                              
+                              call get_pindex(l)
+                              i=ijkp(l,1)
+                              j=ijkp(l,2)
+                              k=ijkp(l,3)
                               fitdist= b0(i,j,k,1)/ &
                               sqrt( b0(i,j,k,1)**2+b0(i,j,k,2)**2+b0(i,j,k,3)**2 )!
                              
@@ -160,8 +166,10 @@ module part_init
                         beta_p(l) = beta_particle
 
                   else if ((population .eq. 2) .or. (population .eq. 3) .or. (population .eq. 7) .or. (population .eq. 6)) then !Foreshock Ions, Right Edge
-                        call get_pindex(i,j,k,l)
-
+                        call get_pindex(l)
+                        i=ijkp(l,1)
+                        j=ijkp(l,2)
+                        k=ijkp(l,3)
                         
                         EvBx = -( ( up(i-1,j,k,2)*b1(i-1,j,k,3) - up(i-1,j,k,3)*b1(i-1,j,k,2) )  )
                         EvBy =  ( ( up(i-1,j,k,1)*b1(i-1,j,k,3) - up(i-1,j,k,3)*b1(i-1,j,k,1) )  )
