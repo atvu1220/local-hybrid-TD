@@ -1,7 +1,7 @@
 module dimensions
       implicit none
       save
-      integer, parameter:: nx = 202, ny = 3, nz = 400 
-      integer, parameter:: Ni_max =4000000
+      integer, parameter:: nx = 402, ny = 3, nz = 150 
+      integer, parameter:: Ni_max =3000000
            
 end module dimensions

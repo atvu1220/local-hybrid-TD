@@ -40,7 +40,7 @@ module part_init
 
                   ! X Component
                   if ((population .eq. 1) .or. (population .eq. 5) )then !Solar Wind
-                        mix_ind(l) = 0
+                       
                         
                         if (boundx .eq. 5) then
                               xp(l,1) = 0.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) +(1.0)*(qx(2)-qz(1)) !Shock real, to propagate SW/field
@@ -58,7 +58,7 @@ module part_init
                         
                   else if ((population .eq. 0) .or. (population .eq. 4)) then !Solar Wind, Everywhere
                   
-                        mix_ind(l) = 0
+                        !mix_ind(l) = 0
                         xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(nx-1)+qx(1)) !nx-1 for periodic, nx for nonperiodic in x
                         !xp(l,1) = (1.0-pad_ranf())*(qx(nx)-qx(1))
                         
@@ -72,7 +72,7 @@ module part_init
                         
                   else if ((population .eq. 7) .or. (population .eq. 7) )then !Foreshock Left
                   
-                        mix_ind(l) = 1
+                        !mix_ind(l) = 1
                         xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1))
                         
                   endif
@@ -112,6 +112,7 @@ module part_init
 
                   else if ((population .eq. 4) .or. (population .eq. 5))then !TD
                         !Fill in a bit more in solar wind within TD
+
                         montecarlo = 0
                         do 20 while (montecarlo .eq. 0) 
 
@@ -142,10 +143,27 @@ module part_init
                               if (pad_ranf() .le. fitdist) montecarlo = 1     
 
                         23 continue
-      
+
                   else !All other Z
+                        mix_ind(l) = 0
                         xp(l,3) = qz(1)+(1.0-pad_ranf())*(qz(nz-1)-qz(1))
                   endif
+
+
+
+
+                  !Label top and bottom SW ions for planar shock run
+                  if ((population .eq. 0) .or. (population .eq. 1) .and. (boundx .eq. 5)) then
+                        if ((xp(l,3) .le. qz(1)*nz/3) .or. (xp(l,3) .gt. 2*qz(1)*nz/3)) then
+                              mix_ind(l) = 0 !bot
+                        else if ((xp(l,3) .gt. qz(1)*nz/3) .and. (xp(l,3) .le. 2*qz(1)*nz/3)) then
+                              mix_ind(l) = 1 !top
+                        endif
+                  endif
+
+
+                  
+
 
                   m_arr(l) = mass
 

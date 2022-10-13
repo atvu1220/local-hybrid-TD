@@ -57,7 +57,7 @@ program hybrid
       if (my_rank .eq. 0) then
             call check_inputs()
             write(*,*) 'Total particles, PPP, #pc', Ni_tot_sys,Ni_tot,procnum
-            write(*,*) 'Partilces per cell... ', Ni_tot_sys/((nz-2)*(ny-2)*(nx-2))
+            write(*,*) 'Particles per cell... ', Ni_tot_sys/((nz-2)*(ny-2)*(nx-2))
             write(*,*) ' '
       endif
       
@@ -229,34 +229,35 @@ program hybrid
 
             !Injection when previously injected ions move out of cell.
             if (m .gt. 0.5*sw_delayTime ) then
-
+                 
                   Ni_tot_1 = Ni_tot+1
                   Ni_tot_2 = Ni_tot + Nx_boundary - 1
                   Ni_tot = Ni_tot_2
                   call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,1) !SW at left boundary
             
-            
-                  Ni_tot_1 = Ni_tot+1
-                  Ni_tot_2 = Ni_tot + TD_boundary -1
-                  Ni_tot = Ni_tot_2
-                  call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,5) !TD at left boundary
-            
+                  if (boundx .ne. 5) then
+                        Ni_tot_1 = Ni_tot+1
+                        Ni_tot_2 = Ni_tot + TD_boundary -1
+                        Ni_tot = Ni_tot_2
+                        call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,5) !TD at left boundary
                   
-                  Ni_tot_1 = Ni_tot+1
-                  Ni_tot_2 = Ni_tot + FS_boundary - 1
-                  Ni_tot = Ni_tot_2
-                  call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,2) !FS Bot Right boundary
-                  
-            
-                  if (quasiparallel .eq. 2) then 
+                        
                         Ni_tot_1 = Ni_tot+1
                         Ni_tot_2 = Ni_tot + FS_boundary - 1
                         Ni_tot = Ni_tot_2
-                        call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,6) !FS Top Right Boundary
+                        call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,2) !FS Bot Right boundary
+                        
+                  
+                        if (quasiparallel .eq. 2) then 
+                              Ni_tot_1 = Ni_tot+1
+                              Ni_tot_2 = Ni_tot + FS_boundary - 1
+                              Ni_tot = Ni_tot_2
+                              call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,6) !FS Top Right Boundary
+                        endif
                   endif
-            
+
                   call f_update_tlev(b1,b12,b1p2,bt,b0)  
-            
+                  
             endif
 
 

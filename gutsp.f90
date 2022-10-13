@@ -1,7 +1,6 @@
 module gutsp
       implicit none
       contains
-
       subroutine remove_ion(ion_l)
 ! Removes particles from the simulation that have gone out of bounds
             use dimensions
@@ -1733,7 +1732,7 @@ subroutine get_temperature_cold()
             use grid, only: qx,qy,qz
             implicit none
             integer:: l
-            REAL:: vx, vy, vz, va_x
+            REAL:: vx, vy, vz, va_x,vmag
             
             if (boundx .eq. 1) then   !Fully periodic
                   where (xp(:,1) .gt. qx(nx-1))
@@ -1857,12 +1856,40 @@ subroutine get_temperature_cold()
 
                   do l=Ni_tot,1,-1
                         !x boundaries
-                        if ( (xp(l,1) .lt. (qx(2)-qx(1)) )  .and. ( vp(l,1) .lt. 0  ) )then!  .and. (vp(l,1) .lt. 0) )  then
+                        !if ( (xp(l,1) .lt. (qx(2)-qx(1)) )  .and. ( vp(l,1) .lt. 0  ) )then!  .and. (vp(l,1) .lt. 0) )  then
+                        if ( (xp(l,1) .lt. 0) )then!  .and. (vp(l,1) .lt. 0) )  then
                               call remove_ion(l)                 
-                        else if ( ( xp(l,1) .ge. qx(nx-1) )) then! .and. ( vp(l,1) .gt. 0 ) .and. (mix_ind(l) .eq. 1) ) then      
+                        else if ( ( xp(l,1) .ge. qx(nx-1) )) then! .and. ( vp(l,1) .gt. 0 ) .and. (mix_ind(l) .eq. 1) ) then 
+                              
+                              !vmag = sqrt(vp(l,1)*vp(l,1) + vp(l,2)*vp(l,2) + vp(l,3)*vp(l,3))
+                              !vx = -vmag*abs(sqrt(-log(pad_ranf()))*cos(PI*pad_ranf()))
+                              !vy = vmag*sqrt(-log(pad_ranf()))*cos(PI*pad_ranf())
+                              !vz = vmag*sqrt(-log(pad_ranf()))*cos(PI*pad_ranf())
+
+                              !xp(l,1) = qx(nx-1)-(xp(l,1) - qx(nx-1))
+                             ! if ((xp(l,3) .ge. qx(1)*nz/3-qx(1)*5) .and. (xp(l,3) .le. qx(1)*nz/3+qx(1)*5)) then !  
+                              !      vp(l,1) = 0
+                             !       xp(l,1) = qx(nx-1)-(xp(l,1) - qx(nx-1))
+                             !       mix_ind(l) = 1 !reflected solar wind ions are not marked as "mixed" or as foreshock ions
+
+                             ! else if ((xp(l,3) .ge. qx(1)*2*nz/3-qx(1)*5) .and. (xp(l,3) .le. qx(1)*2*nz/3+qx(1)*5))  then !BL top
+                             !       vp(l,1) = 0
+                             !       xp(l,1) = qx(nx-1)-(xp(l,1) - qx(nx-1))
+                             !       mix_ind(l) = 1 !reflected solar wind ions are not marked as "mixed" or as foreshock ions
+                             ! else
+
+
                               vp(l,1) = -vp(l,1)
                               xp(l,1) = qx(nx-1)-(xp(l,1) - qx(nx-1))
-                              mix_ind(l) = 1 !reflected solar wind ions are not marked as "mixed" or as foreshock ions
+
+
+                            !  !reflected solar wind ions are now marked as "mixed" or as foreshock ions
+                              !if ((xp(l,3) .le. qx(1)*nz/3) .or. (xp(l,3) .gt. 2*qx(1)*nz/3)) then
+                              !      mix_ind(l) = 1 !bot
+                              !else if ((xp(l,3) .gt. qx(1)*nz/3) .and. (xp(l,3) .le. 2*qx(1)*nz/3)) then
+                              !      mix_ind(l) = 2 !top
+                              !endif
+
                         endif
             
                   enddo

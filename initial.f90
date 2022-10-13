@@ -18,26 +18,26 @@ nu(nx,ny,nz)
 real, intent(inout):: input_Eb
 					
 real:: eoverm, mO_q, vol, b0eoverm
-real:: phi, dtheta
+real:: phi, dtheta, ByConeAngleDelta
 integer:: i,j,k,m,Bsetup
 
-if (quasiparallel .eq. 1) then
-if (ByConeAngle .gt. 1.0) then
-Bsetup= 15
-if (boundx .eq. 5) then
-Bsetup = 17 !2 TD, reflecting, periodic
-endif
-else
-Bsetup= 8
-if (boundx .eq. 5) then
-Bsetup = 16 !2 TD, reflecting, periodic
-endif
-endif
-elseif (quasiparallel .eq. 2) then
-Bsetup = 21
-endif
+!if (quasiparallel .eq. 1) then
+!if (ByConeAngle .gt. 1.0) then
+!Bsetup= 15
+!if (boundx .eq. 5) then
+!Bsetup = 17 !2 TD, reflecting, periodic
+!endif
+!else
+!Bsetup= 8
+!if (boundx .eq. 5) then
+!Bsetup = 16 !2 TD, reflecting, periodic
+!endif
+!endif
+!elseif (quasiparallel .eq. 2) then
+!Bsetup = 21
+!endif
 
-!Bsetup = 18
+Bsetup = 24
 
 dtheta = 2*pi / 4 /(2*ddthickness)
 
@@ -216,22 +216,291 @@ endif
 
 if (Bsetup .eq. 21) then !Bot -By, Top +By, double Qpara
 if (k .le. nz/2.0) then !BL bottom 
-b0(i,j,k,1) =  2*(cos(ByConeAngle/180.0*pi))*0.25*b0_init*eoverm
-b0(i,j,k,2) =  -(sin(ByConeAngle/180.0*pi)+&
-sin((ByConeAngle-2*ByConeAngle)/180.0*pi))*0.25*b0_init*eoverm + &
-(-sin(ByConeAngle/180.0*pi)+sin((ByConeAngle-2*ByConeAngle)/180.0*pi))*b0_init*eoverm*&
+b0(i,j,k,1) =  2*(cos((ByConeAngle-10)/180.0*pi))*0.25*b0_init*eoverm
+b0(i,j,k,2) =  -(sin((ByConeAngle-10)/180.0*pi)+&
+sin(((ByConeAngle-10)-2*(ByConeAngle-10))/180.0*pi))*0.25*b0_init*eoverm + &
+(-sin((ByConeAngle-10)/180.0*pi)+sin(((ByConeAngle-10)-2*(ByConeAngle-10))/180.0*pi))*b0_init*eoverm*&
 0.25*tanh( ( qz(nz/2)-qz(k))/(ddthickness*delz))
 b0(i,j,k,3) = 0.0
 endif
 if (k .gt. nz/2.0) then !BL top
-b0(i,j,k,1) =  2*(cos(ByConeAngle/180.0*pi))*0.25*b0_init*eoverm
-b0(i,j,k,2) =   (sin(ByConeAngle/180.0*pi)+ &
-sin((ByConeAngle-2*ByConeAngle)/180.0*pi))*0.25*b0_init*eoverm + &
-(sin(ByConeAngle/180.0*pi)-sin((ByConeAngle-2*ByConeAngle)/180.0*pi))*b0_init*eoverm*&
+b0(i,j,k,1) =  2*(cos((ByConeAngle-0)/180.0*pi))*0.25*b0_init*eoverm
+b0(i,j,k,2) =   (sin((ByConeAngle-0)/180.0*pi)+ &
+sin(((ByConeAngle-0)-2*(ByConeAngle-0))/180.0*pi))*0.25*b0_init*eoverm + &
+(sin((ByConeAngle-0)/180.0*pi)-sin(((ByConeAngle-0)-2*(ByConeAngle-0))/180.0*pi))*b0_init*eoverm*&
 0.25*tanh( (qz(k)-qz(nz/2) )/(ddthickness*delz))
 b0(i,j,k,3) = 0.0
 endif
 endif
+
+
+!2TD periodic for Bow shock
+if (Bsetup .eq. 22) then !BLMN Coordinates, with variable coneAngle By
+    !peridoic z, 2 TD, reflecting boundary
+    if (k .le. nz/2) then
+        if (k .le. nz/3) then !BL bottom 
+            b0(i,j,k,1) = 2*(cos((ByConeAngle-0)/180.0*pi))*0.25*b0_init*eoverm
+            b0(i,j,k,2) = -(sin((ByConeAngle-0)/180.0*pi) + &
+            sin(((ByConeAngle-0)-2*(ByConeAngle-0))/180.0*pi))*0.25*b0_init*eoverm + &
+            (-sin((ByConeAngle-0)/180.0*pi)+sin(((ByConeAngle-0)-2*(ByConeAngle-0))/180.0*pi))*&
+            b0_init*eoverm*0.25*tanh( ( qz(nz/3)-qz(k) )/(ddthickness*delz))
+            b0(i,j,k,3) = 0.0
+        endif
+        if (k .gt. nz/3) then !BL top
+            b0(i,j,k,1) = 2*(cos((ByConeAngle-0)/180.0*pi))*0.25*b0_init*eoverm
+            b0(i,j,k,2) = +(sin((ByConeAngle-0)/180.0*pi) + &
+            sin(((ByConeAngle-0)-2*(ByConeAngle-0))/180.0*pi))*0.25*b0_init*eoverm + &
+            (+sin((ByConeAngle-0)/180.0*pi)-sin(((ByConeAngle-0)-2*(ByConeAngle-0))/180.0*pi))*&
+            b0_init*eoverm*0.25*tanh( (qz(k)-qz(nz/3) )/(ddthickness*delz))
+            b0(i,j,k,3) = 0.0
+        endif
+    endif
+        
+    if (k .gt. nz/2) then
+        if (k .gt. 2*nz/3) then !BL top
+            b0(i,j,k,1) = 2*(cos((ByConeAngle-0)/180.0*pi))*0.25*b0_init*eoverm
+            b0(i,j,k,2) = -(sin((ByConeAngle-0)/180.0*pi) + &
+            sin(((ByConeAngle-0)-2*(ByConeAngle-0))/180.0*pi))*0.25*b0_init*eoverm + &
+            (-sin((ByConeAngle-0)/180.0*pi)+sin(((ByConeAngle-0)-2*(ByConeAngle-0))/180.0*pi))*&
+            b0_init*eoverm*0.25*tanh( (qz(k)-qz(2*nz/3) )/(ddthickness*delz))
+            b0(i,j,k,3) = 0.0
+        endif
+        if (k .le. 2*nz/3) then !BL bottom 
+            b0(i,j,k,1) = 2*(cos((ByConeAngle-0)/180.0*pi))*0.25*b0_init*eoverm
+            b0(i,j,k,2) = +(sin((ByConeAngle-0)/180.0*pi) + &
+            sin(((ByConeAngle-0)-2*(ByConeAngle-0))/180.0*pi))*0.25*b0_init*eoverm + &
+            (+sin((ByConeAngle-0)/180.0*pi)-sin(((ByConeAngle-0)-2*(ByConeAngle-0))/180.0*pi))*&
+            b0_init*eoverm*0.25*tanh( ( qz(2*nz/3)-qz(k))/(ddthickness*delz))
+            b0(i,j,k,3) = 0.0
+        endif
+
+    endif 
+    
+endif
+
+
+
+if (Bsetup .eq. 23) then !BLMN Coordinates, with variable coneAngle By
+    !peridoic z, 2 TD, reflecting boundary
+    ByConeAngle = -15.0
+    ByConeAngleDelta = +30.0
+    if (k .le. nz/2) then
+    if (k .lt. nz/3) then !BL bottom 
+    b0(i,j,k,1) = &
+    (cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    0.25*b0_init*eoverm + &
+    (cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    b0_init*eoverm*0.25*tanh( ( qz(nz/3)-qz(k))/(ddthickness*delz))
+
+    b0(i,j,k,2) = &
+    (sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    0.25*b0_init*eoverm + &
+    (sin(ByConeAngle/180.0*pi)-sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    b0_init*eoverm*0.25*tanh( ( qz(nz/3)-qz(k)-qz(1))/(ddthickness*delz))
+    
+    !if (b0(i,j,k,2) > b0_init*eoverm) then
+    !    b0(i,j,k,2) = b0_init*eoverm
+    !endif
+
+    !if (b0(i,j,k,2) < -b0_init*eoverm) then
+    !    b0(i,j,k,2) = -b0_init*eoverm
+    !endif
+
+    b0(i,j,k,3) = 0.0
+    endif
+    if (k .ge. nz/3) then !BL top
+    b0(i,j,k,1) = &
+    +(cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    0.25*b0_init*eoverm - &
+    (cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    b0_init*eoverm*0.25*tanh( (qz(k)-qz(nz/3) )/(ddthickness*delz))
+
+    b0(i,j,k,2) = &
+    (sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    0.25*b0_init*eoverm + &
+    (-sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    b0_init*eoverm*0.25*tanh( (qz(k)-qz(nz/3)-qz(1) )/(ddthickness*delz))
+
+    !if (b0(i,j,k,2) > b0_init*eoverm) then
+    !    b0(i,j,k,2) = b0_init*eoverm
+    !endif
+
+    !if (b0(i,j,k,2) < -b0_init*eoverm) then
+    !    b0(i,j,k,2) = -b0_init*eoverm
+    !endif
+
+    b0(i,j,k,3) = 0.0
+    endif
+    endif
+    
+    if (k .gt. nz/2) then
+    if (k .gt. 2*nz/3) then !BL top
+    b0(i,j,k,1) = &
+    (cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    0.25*b0_init*eoverm + &
+    (cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    b0_init*eoverm*0.25*tanh( (qz(k)-qz(2*nz/3) )/(ddthickness*delz))
+    
+    b0(i,j,k,2) = &
+    (sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    0.25*b0_init*eoverm + &
+    (sin(ByConeAngle/180.0*pi)-sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    b0_init*eoverm*0.25*tanh( (qz(k)-qz(2*nz/3)-qz(1) )/(ddthickness*delz))
+    
+    !if (b0(i,j,k,2) > b0_init*eoverm) then
+    !    b0(i,j,k,2) = b0_init*eoverm
+    !endif
+
+    !if (b0(i,j,k,2) < -b0_init*eoverm) then
+    !    b0(i,j,k,2) = -b0_init*eoverm
+    !endif
+
+    b0(i,j,k,3) = 0.0
+    endif
+    
+    if (k .le. 2*nz/3) then !BL bottom 
+    b0(i,j,k,1) = &
+    +(cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    0.25*b0_init*eoverm - &
+    (cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    b0_init*eoverm*0.25*tanh( ( qz(2*nz/3)-qz(k))/(ddthickness*delz))
+    
+    b0(i,j,k,2) = &
+    (sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    0.25*b0_init*eoverm + &
+    (-sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+    b0_init*eoverm*0.25*tanh( ( qz(2*nz/3)-qz(k)-qz(1))/(ddthickness*delz))
+    
+    !if (b0(i,j,k,2) > b0_init*eoverm) then
+    !    b0(i,j,k,2) = b0_init*eoverm
+    !endif
+
+    !if (b0(i,j,k,2) < -b0_init*eoverm) then
+    !    b0(i,j,k,2) = -b0_init*eoverm
+    !endif
+
+    b0(i,j,k,3) = 0.0
+    endif
+    endif 
+    
+    endif
+
+
+    if (Bsetup .eq. 24) then !BLMN Coordinates, with variable coneAngle By
+        if (i .gt. nx-150) then
+            b0(i,j,k,1) = 0.0!b0_init*eoverm*0.5
+            b0(i,j,k,2) = b0_init*eoverm*0.5
+            b0(i,j,k,3) = 0.0
+        endif
+
+        if (i .le. nx-150) then
+        !peridoic z, 2 TD, reflecting boundary
+        ByConeAngle = -15.0
+        ByConeAngleDelta = +30.0
+            if (k .le. nz/2) then
+                if (k .lt. nz/3) then !BL bottom 
+                    b0(i,j,k,1) = &
+                    (cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    0.25*b0_init*eoverm + &
+                    (cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    b0_init*eoverm*0.25*tanh( ( qz(nz/3)-qz(k))/(ddthickness*delz))
+                
+                    b0(i,j,k,2) = &
+                    (sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    0.25*b0_init*eoverm + &
+                    (sin(ByConeAngle/180.0*pi)-sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    b0_init*eoverm*0.25*tanh( ( qz(nz/3)-qz(k)-qz(1))/(ddthickness*delz))
+                    
+                    !if (b0(i,j,k,2) > b0_init*eoverm) then
+                    !    b0(i,j,k,2) = b0_init*eoverm
+                    !endif
+                
+                    !if (b0(i,j,k,2) < -b0_init*eoverm) then
+                    !    b0(i,j,k,2) = -b0_init*eoverm
+                    !endif
+                
+                    b0(i,j,k,3) = 0.0
+                endif
+                if (k .ge. nz/3) then !BL top
+                    b0(i,j,k,1) = &
+                    +(cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    0.25*b0_init*eoverm - &
+                    (cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    b0_init*eoverm*0.25*tanh( (qz(k)-qz(nz/3) )/(ddthickness*delz))
+                
+                    b0(i,j,k,2) = &
+                    (sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    0.25*b0_init*eoverm + &
+                    (-sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    b0_init*eoverm*0.25*tanh( (qz(k)-qz(nz/3)-qz(1) )/(ddthickness*delz))
+                
+                    !if (b0(i,j,k,2) > b0_init*eoverm) then
+                    !    b0(i,j,k,2) = b0_init*eoverm
+                    !endif
+                
+                    !if (b0(i,j,k,2) < -b0_init*eoverm) then
+                    !    b0(i,j,k,2) = -b0_init*eoverm
+                    !endif
+    
+                    b0(i,j,k,3) = 0.0
+                endif
+            endif
+        
+            if (k .gt. nz/2) then
+                if (k .gt. 2*nz/3) then !BL top
+                    b0(i,j,k,1) = &
+                    (cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    0.25*b0_init*eoverm + &
+                    (cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    b0_init*eoverm*0.25*tanh( (qz(k)-qz(2*nz/3) )/(ddthickness*delz))
+                    
+                    b0(i,j,k,2) = &
+                    (sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    0.25*b0_init*eoverm + &
+                    (sin(ByConeAngle/180.0*pi)-sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    b0_init*eoverm*0.25*tanh( (qz(k)-qz(2*nz/3)-qz(1) )/(ddthickness*delz))
+                    
+                    !if (b0(i,j,k,2) > b0_init*eoverm) then
+                    !    b0(i,j,k,2) = b0_init*eoverm
+                    !endif
+                
+                    !if (b0(i,j,k,2) < -b0_init*eoverm) then
+                    !    b0(i,j,k,2) = -b0_init*eoverm
+                    !endif
+                
+                    b0(i,j,k,3) = 0.0
+                endif
+        
+                if (k .le. 2*nz/3) then !BL bottom 
+                    b0(i,j,k,1) = &
+                    +(cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    0.25*b0_init*eoverm - &
+                    (cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    b0_init*eoverm*0.25*tanh( ( qz(2*nz/3)-qz(k))/(ddthickness*delz))
+                    
+                    b0(i,j,k,2) = &
+                    (sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    0.25*b0_init*eoverm + &
+                    (-sin(ByConeAngle/180.0*pi)+sin((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
+                    b0_init*eoverm*0.25*tanh( ( qz(2*nz/3)-qz(k)-qz(1))/(ddthickness*delz))
+                    
+                    !if (b0(i,j,k,2) > b0_init*eoverm) then
+                    !    b0(i,j,k,2) = b0_init*eoverm
+                    !endif
+                
+                    !if (b0(i,j,k,2) < -b0_init*eoverm) then
+                    !    b0(i,j,k,2) = -b0_init*eoverm
+                    !endif
+                
+                    b0(i,j,k,3) = 0.0
+                endif
+            endif 
+        endif
+    endif
+
+
+
+
 
 
 enddo
