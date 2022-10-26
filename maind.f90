@@ -206,7 +206,6 @@ program hybrid
 
       !MAIN LOOP
       do m = 1, nt
-
             if (my_rank .eq. 0) then
                   write(*,*) 'time...', m, m*dt, Ni_tot
             endif
@@ -241,14 +240,19 @@ program hybrid
                         Ni_tot = Ni_tot_2
                         call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,5) !TD at left boundary
                   
-                        
-                        Ni_tot_1 = Ni_tot+1
-                        Ni_tot_2 = Ni_tot + FS_boundary - 1
-                        Ni_tot = Ni_tot_2
-                        call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,2) !FS Bot Right boundary
-                        
+                        if (quasiparallel .eq. 1) then 
+                              Ni_tot_1 = Ni_tot+1
+                              Ni_tot_2 = Ni_tot + FS_boundary - 1
+                              Ni_tot = Ni_tot_2
+                              call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,2) !FS Bot Right boundary
+                        endif
                   
                         if (quasiparallel .eq. 2) then 
+                              Ni_tot_1 = Ni_tot+1
+                              Ni_tot_2 = Ni_tot + FS_boundary - 1
+                              Ni_tot = Ni_tot_2
+                              call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,2) !FS Bot Right boundary
+                  
                               Ni_tot_1 = Ni_tot+1
                               Ni_tot_2 = Ni_tot + FS_boundary - 1
                               Ni_tot = Ni_tot_2
@@ -259,7 +263,7 @@ program hybrid
                   call f_update_tlev(b1,b12,b1p2,bt,b0)  
                   
             endif
-
+            
 
 
             call get_interp_weights()
@@ -298,7 +302,7 @@ program hybrid
             call get_vp_final()
 
 
-
+            
             call move_ion_half() !1/2 step ion move to n+1/2
 
             call get_interp_weights()

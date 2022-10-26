@@ -46,7 +46,8 @@ module part_init
                               xp(l,1) = 0.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) +(1.0)*(qx(2)-qz(1)) !Shock real, to propagate SW/field
                         endif
                         if (boundx .eq. 4) then
-                              xp(l,1) = 1.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) !Normal runs, open boundary
+                              !xp(l,1) = 1.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) !Normal runs, open boundary
+                              xp(l,1) = 0.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) !Normal runs, open boundary
                         endif
                                                 
                   else if (population .eq. 2 .or. population .eq. 6) then !Foreshock Right
@@ -59,7 +60,7 @@ module part_init
                   else if ((population .eq. 0) .or. (population .eq. 4)) then !Solar Wind, Everywhere
                   
                         !mix_ind(l) = 0
-                        xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(nx-1)+qx(1)) !nx-1 for periodic, nx for nonperiodic in x
+                        xp(l,1) = (qx(2)-qx(1))+(1.0-pad_ranf())*(qx(nx-1)+qx(1))!-1)+qx(1)) !nx-1 for periodic, nx for nonperiodic in x
                         !xp(l,1) = (1.0-pad_ranf())*(qx(nx)-qx(1))
                         
                   else if (population .eq. 3) then !Foreshock, initial Beam
@@ -153,10 +154,10 @@ module part_init
 
 
                   !Label top and bottom SW ions for planar shock run
-                  if ((population .eq. 0) .or. (population .eq. 1) .and. (boundx .eq. 5)) then
-                        if ((xp(l,3) .le. qz(1)*nz/3) .or. (xp(l,3) .gt. 2*qz(1)*nz/3)) then
+                  if ( ((population .eq. 0) .or. (population .eq. 1)) .and. (boundx .eq. 5)) then
+                        if ((xp(l,3) .le. qz(1)*nz/4) .or. (xp(l,3) .gt. 3*qz(1)*nz/4)) then
                               mix_ind(l) = 0 !bot
-                        else if ((xp(l,3) .gt. qz(1)*nz/3) .and. (xp(l,3) .le. 2*qz(1)*nz/3)) then
+                        else if ((xp(l,3) .gt. qz(1)*nz/4) .and. (xp(l,3) .le. 3*qz(1)*nz/4)) then
                               mix_ind(l) = 1 !top
                         endif
                   endif

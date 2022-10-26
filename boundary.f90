@@ -214,7 +214,7 @@ module boundary
                   do j=1,ny
                         do k=1,nz
                               do m=1,3
-                                    b(1,j,k,m) = b(2,j,k,m)
+                                    !b(1,j,k,m) = b(2,j,k,m)
                                     b(nx,j,k,m) = b(nx-1,j,k,m)
                               enddo
                         enddo
@@ -346,7 +346,7 @@ end subroutine periodic_yz
 !       X surfaces are not periodic
             do j=1,ny
                   do k=1,nz
-                        b(1,j,k) = b(2,j,k)
+                        !b(1,j,k) = b(2,j,k)
                         b(nx,j,k) = b(nx-1,j,k)
                   enddo
             enddo

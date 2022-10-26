@@ -22,9 +22,9 @@ module gutsf
             do i=1,nx
                   do j=1,ny
                         do k= 1,nz
-                              bt(i,j,k,1) = b1p2(i,j,k,1) + b0(i,j,k,1)
-                              bt(i,j,k,2) = b1p2(i,j,k,2) + b0(i,j,k,2)
-                              bt(i,j,k,3) = b1p2(i,j,k,3) + b0(i,j,k,3) 
+                              bt(i,j,k,1) = b1p2(i,j,k,1) !+ b0(i,j,k,1)
+                              bt(i,j,k,2) = b1p2(i,j,k,2) !+ b0(i,j,k,2)
+                              bt(i,j,k,3) = b1p2(i,j,k,3) !+ b0(i,j,k,3) 
                               do m=1,3
                                     b12(i,j,k,m)= b1(i,j,k,m)
                                     b1(i,j,k,m) = b1p2(i,j,k,m)

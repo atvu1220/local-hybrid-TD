@@ -264,7 +264,7 @@ module gutsp
                   xp(l,3) = xp(l,3) + dth*vp(l,3)
             enddo      
             call particle_boundary()      
-      
+          
       end subroutine move_ion_half
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1728,7 +1728,7 @@ subroutine get_temperature_cold()
             use inputs, only: boundx, PI, vsw, dx, dy, km_to_m, &
             beta_particle, kboltz, mion, nf_init, &
             b0_init,mu0,boundx, q, mO, va_f, vth, va!, removed
-            use var_arrays, only: xp, vp, Ni_tot, b0, mix_ind
+            use var_arrays, only: xp, vp, vp1, Ni_tot, b0, mix_ind
             use grid, only: qx,qy,qz
             implicit none
             integer:: l
@@ -1810,10 +1810,10 @@ subroutine get_temperature_cold()
                   
                         !x boundaries
                         if ( (xp(l,1) .lt. 0) )then!  .and. (vp(l,1) .lt. 0) )  then
-                              call remove_ion(l)
+                         !     call remove_ion(l)
                         else if ( ( xp(l,1) .gt. qx(nx) )) then! .and. ( vp(l,1) .gt. 0 ) .and. (mix_ind(l) .eq. 1) ) then
                               call remove_ion(l)     
-                        
+                              
                         !z boundaries      
                         else if (xp(l,3) .ge. (qz(nz-1)) ) then
                               vp(l,3) = -vp(l,3)
@@ -1821,7 +1821,7 @@ subroutine get_temperature_cold()
                               xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(nx-1)-qx(1))
                               xp(l,2) = qy(1)+(1.0-pad_ranf())*(qy(ny-1)-qy(1))
                               xp(l,3) = qz(nz-1)-(xp(l,3) - qz(nz-1))
-
+                             
                         else if (xp(l,3) .le. qz(1)) then
                               vp(l,3) = -vp(l,3)
 
@@ -1857,7 +1857,7 @@ subroutine get_temperature_cold()
                   do l=Ni_tot,1,-1
                         !x boundaries
                         !if ( (xp(l,1) .lt. (qx(2)-qx(1)) )  .and. ( vp(l,1) .lt. 0  ) )then!  .and. (vp(l,1) .lt. 0) )  then
-                        if ( (xp(l,1) .lt. 0) )then!  .and. (vp(l,1) .lt. 0) )  then
+                        if ( (xp(l,1) .lt. 0)   .and. (vp(l,1) .lt. 0) )  then
                               call remove_ion(l)                 
                         else if ( ( xp(l,1) .ge. qx(nx-1) )) then! .and. ( vp(l,1) .gt. 0 ) .and. (mix_ind(l) .eq. 1) ) then 
                               
@@ -1880,8 +1880,9 @@ subroutine get_temperature_cold()
 
 
                               vp(l,1) = -vp(l,1)
+                              vp1(l,1) = -vp1(l,1)
                               xp(l,1) = qx(nx-1)-(xp(l,1) - qx(nx-1))
-
+                             ! mix_ind(l) = 1 !reflected
 
                             !  !reflected solar wind ions are now marked as "mixed" or as foreshock ions
                               !if ((xp(l,3) .le. qx(1)*nz/3) .or. (xp(l,3) .gt. 2*qx(1)*nz/3)) then
