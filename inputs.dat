@@ -7,9 +7,9 @@
 1.0                  				!Plasma beta - Determines thermal speed for Maxwellian
 1.0                   				!grid size as fraction of lambda_i
 0.0025		      				    !nu_init_frac, fraction of gyrofrequency for nu_init (0.0025)
-96                   				!number of particles per cell
+40                   				!number of particles per cell
 0.0                				    !electron temperature (eV)
-5                     				!Boudary condition (1: fully periodic   2: Periodic on xy   4:periodic on y   5: periodic on yz)
+4                     				!Boudary condition (1: fully periodic   2: Periodic on xy   4:periodic on y   5: periodic on yz)
 1       					        !Discontinuity half-thickness, in lambda_i
 75        					        !Foreshock Beam Width, in lambda_i, starts below nz/2-ddthickness
 12.0						        !Ratio of densities between foreshock ions over solar wind ions
@@ -18,4 +18,4 @@
 90.0						        !Magnetic Shear Angle across Harris Current Sheet
 2						            !Number of Quasi-parallel sides.
 15.0						        !By Cone Angle, 15.0, 30.0 only
-'/home/andrew/Documents/Run29s/'     !output directorys
+'/home/andrew/Documents/Run36/'     !output directorys
