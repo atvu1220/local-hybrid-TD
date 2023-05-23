@@ -1,7 +1,7 @@
 5e-9       	 				        !magnetic field (Tesla)
 5e15                 				!minimum density (km^-3)
 0.02                				!particle time step (fraction of omega_i)
-8000                				!number of time steps (1000)
+5000                				!number of time steps (1000)
 25                   				!data output interval (25)
 10.0                   				!flow speed (V_A)
 1.0                  				!Plasma beta - Determines thermal speed for Maxwellian
@@ -18,4 +18,4 @@
 90.0						        !Magnetic Shear Angle across Harris Current Sheet
 2						            !Number of Quasi-parallel sides.
 15.0						        !By Cone Angle, 15.0, 30.0 only
-'/home/andrew/Documents/Run21/'     !output directory
+'/home/andrew/Documents/Run29s/'     !output directorys
