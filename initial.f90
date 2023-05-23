@@ -387,8 +387,13 @@ if (Bsetup .eq. 23) then !BLMN Coordinates, with variable coneAngle By
     endif
 
 
-    if (Bsetup .eq. 24) then !BLMN Coordinates, with variable coneAngle By
-        if (i .gt. nx-100) then
+
+
+
+    if (Bsetup .eq. 24) then !BLMN Coordinates, with variable coneAngle By, TD propagates to formed planar shock
+        ByConeAngle = -45.0
+        ByConeAngleDelta = +90.0
+        if (i .gt. nx-200) then
             b0(i,j,k,1) =  (cos(ByConeAngle/180.0*pi)+cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
             0.25*b0_init*eoverm + &
             (cos(ByConeAngle/180.0*pi)-cos((ByConeAngle+ByConeAngleDelta)/180.0*pi))*&
@@ -428,10 +433,9 @@ if (Bsetup .eq. 23) then !BLMN Coordinates, with variable coneAngle By
             b0(i,j,k,3) = 0.0
         endif
 
-        if (i .le. nx-100) then
+        if (i .le. nx-200) then
         !peridoic z, 2 TD, reflecting boundary
-        ByConeAngle = -15.0
-        ByConeAngleDelta = +30.0
+
             if (k .le. nz/2) then
                 if (k .lt. nz/4) then !BL bottom 
                     b0(i,j,k,1) = &

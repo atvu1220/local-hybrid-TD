@@ -165,6 +165,17 @@ program hybrid
             open(350,file=trim(out_dir)//'c.mnp.dat',status='unknown',form='unformatted')
        
             open(501,file=trim(out_dir)//'c.energy_p.dat',status='unknown',form='unformatted')
+
+            open(601,file=trim(out_dir)//'c.np_cold_foreshock.dat',status='unknown',form='unformatted')
+            open(602,file=trim(out_dir)//'c.up_cold_foreshock.dat',status='unknown',form='unformatted')
+            open(603,file=trim(out_dir)//'c.temp_p_cold_foreshock.dat',status='unknown',form='unformatted')
+            open(604,file=trim(out_dir)//'c.tp_cold_foreshock.dat',status='unknown',form='unformatted')
+
+
+            open(611,file=trim(out_dir)//'c.np_mixed_foreshock.dat',status='unknown',form='unformatted')
+            open(612,file=trim(out_dir)//'c.up_mixed_foreshock.dat',status='unknown',form='unformatted')
+            open(613,file=trim(out_dir)//'c.temp_p_mixed_foreshock.dat',status='unknown',form='unformatted')
+            open(614,file=trim(out_dir)//'c.tp_mixed_foreshock.dat',status='unknown',form='unformatted')
       endif
        
       if (my_rank .gt. 0) then !for Subsequent threads
@@ -335,7 +346,7 @@ program hybrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!           
  
             call move_ion_half()       !final ion move to n+1
-    
+            call update_foreshock()
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !       diagnositc output
             
@@ -360,15 +371,27 @@ program hybrid
                   
                   call update_np_cold() !Update solar wind ion densities                
                   
-                  call get_temperature_cold() !Update solar wind ion temperatures               
+                  call get_temperature_cold() !Update solar wind ion temperatures    
+
+                  call update_np_cold_foreshock() !Update solar wind ion densities                
+                  
+                  call get_temperature_cold_foreshock() !Update solar wind ion temperatures                            
                   
                   call update_np_mixed() !Update foreshock ion densities           
                   
                   call get_temperature_mixed() !Update foreshock ion temperatures
+
+                  call update_np_mixed_foreshock() !Update foreshock ion densities           
+                  
+                  call get_temperature_mixed_foreshock() !Update foreshock ion temperatures                  
                   
                   call update_up_cold(vp) !Update solar wind flow
                   
                   call update_up_mixed(vp) !Update foreshock flow
+
+                  call update_up_cold_foreshock(vp) !Update solar wind flow
+                  
+                  call update_up_mixed_foreshock(vp) !Update foreshock flow                  
 
  
                   if (my_rank .eq. 0) then
@@ -420,6 +443,24 @@ program hybrid
                         !write(340) testPartPos
                         write(350) m
                         write(350) mnp
+
+                        write(601) m
+                        write(601) np_cold_foreshock
+                        write(602) m
+                        write(602) up_cold_foreshock
+                        write(603) m
+                        write(603) temp_p_cold_foreshock/1.6e-19
+                        write(604) m
+                        write(604) tp_cold_foreshock/1.6e-19                   
+
+                        write(611) m
+                        write(611) np_mixed_foreshock
+                        write(612) m
+                        write(612) up_mixed_foreshock
+                        write(613) m
+                        write(613) temp_p_mixed_foreshock/1.6e-19
+                        write(614) m
+                        write(614) tp_mixed_foreshock/1.6e-19           
 
                    endif
                    ndiag = 0
@@ -479,6 +520,15 @@ program hybrid
 !      close(403)
       close(501)
       
+      close(601)
+      close(602)
+      close(603)
+      close(604)
+      close(611)
+      close(612)
+      close(613)
+      close(614)
+
       call system_clock(t2,cnt_rt)
       time=(real(t2,dp_kind) - real(t1,dp_kind))/real(cnt_rt,dp_kind)
       if (my_rank .eq. 0) then

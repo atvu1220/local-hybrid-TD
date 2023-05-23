@@ -39,12 +39,20 @@ module Var_Arrays
                   Ptotal(nx,ny,nz), &
                   np_cold(nx,ny,nz), & 
                   temp_p_cold(nx,ny,nz), &
+                  np_cold_foreshock(nx,ny,nz), & 
+                  temp_p_cold_foreshock(nx,ny,nz), &
                   np_mixed(nx,ny,nz), & 
                   temp_p_mixed(nx,ny,nz), &
+                  np_mixed_foreshock(nx,ny,nz), & 
+                  temp_p_mixed_foreshock(nx,ny,nz), &                 
                   up_cold(nx,ny,nz,3), &
                   up_mixed(nx,ny,nz,3), &
+                  up_cold_foreshock(nx,ny,nz,3), &
+                  up_mixed_foreshock(nx,ny,nz,3), &
                   tp_cold(nx,ny,nz,3), &
                   tp_mixed(nx,ny,nz,3), &
+                  tp_cold_foreshock(nx,ny,nz,3), &
+                  tp_mixed_foreshock(nx,ny,nz,3), &
                   tp(nx,ny,nz,3),&
                   curlBcurrent(nx,ny,nz,3), & !mu0*J current.
                   ue(nx,ny,nz,3)

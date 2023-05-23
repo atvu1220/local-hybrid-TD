@@ -457,7 +457,13 @@ module gutsp
                   j=ijkp(l,2)
                   k=ijkp(l,3)
                   
-                  mixed(i,j,k) = mixed(i,j,k) + mix_ind(l)
+                  
+                  if ((mix_ind(l) .eq. 1) .or. (mix_ind(l) .eq. 3) ) then
+                        mixed(i,j,k) = mixed(i,j,k) + 1.0
+                  elseif ((mix_ind(l) .eq. 0) .or. (mix_ind(l) .eq. 2) ) then
+                        mixed(i,j,k) = mixed(i,j,k) + 0.0
+                  endif
+                  
                   mix_cnt(i,j,k) = mix_cnt(i,j,k) + 1.0
                   
             enddo
@@ -481,7 +487,28 @@ module gutsp
             call boundary_scalar(mixed)
             
       end subroutine update_mixed
-      
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine update_foreshock()
+            ! Weight density to eight nearest grid points
+                        use dimensions
+                        use MPI
+                        use var_arrays, only: Ni_tot,mix_ind,vp
+                        use boundary
+                        implicit none
+                        integer:: l
+
+
+                        
+                        do l = 1, Ni_tot                      
+                              if      ( ( vp(l,1) < 0 ) .and. ( mix_ind(l) .eq. 0 ) ) then
+                                    mix_ind(l) = 2
+                              elseif  ( ( vp(l,1) < 0 ) .and. ( mix_ind(l) .eq. 1 ) ) then
+                                    mix_ind(l) = 3
+                              endif
+                        enddo
+                        
+
+      end subroutine update_foreshock      
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine update_up(vp)
             use dimensions
@@ -707,8 +734,126 @@ module gutsp
 
             call boundary_vector(up_cold)      
             
-      end subroutine update_up_cold
+      end subroutine update_up_cold     
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine update_up_cold_foreshock(vp)
+            use dimensions
+            use MPI
+            use boundary
+            use grid, only: qx,qy,qz
+            use var_arrays, only: np_cold_foreshock,up_cold_foreshock,Ni_tot,ijkp,beta,beta_p,wght,mix_ind
+            implicit none
+            real, intent(in):: vp(Ni_max,3)
+            real:: ct(nx,ny,nz,3), recvbuf(nx*ny*nz*3),volb,nvolb
+            integer:: i,j,k,m,l,ip,jp,kp,count,ierr
+            
+            count=nx*ny*nz*3
+
+            do i=1,nx
+                  do j=1,ny
+                        do k=1,nz
+                              do m=1,3
+                                    up_cold_foreshock(i,j,k,m) = 0.0
+                                    ct(i,j,k,m) = 0.0
+                              enddo
+                        enddo
+                  enddo
+            enddo
+            
+            l=1
+            do while (l .le. Ni_tot) 
+            	do while ( (mix_ind(l) .ne. 2) .and. (l .lt. Ni_tot) )
+			      l=l+1
+	            end do
+		      if  (l .ge. Ni_tot) then
+			      EXIT
+		      endif
+            
+                  !do l=1,Ni_tot
+                  i=ijkp(l,1)
+                  j=ijkp(l,2)
+                  k=ijkp(l,3)
+                  
+                  ip=i+1
+                  jp=j+1
+                  kp=k+1
+                  
+                  volb = (qx(ip)-qx(i))*(qy(jp)-qy(j))*(qz(kp)-qz(k))*beta*beta_p(l)
+                  
+                  if(np_cold_foreshock(i,j,k) .gt. 0.0) then                  
+                        nvolb = 1.0/(np_cold_foreshock(i,j,k)*volb)
+                        ct(i,j,k,1) = ct(i,j,k,1) + vp(l,1)*wght(l,1)*nvolb
+                        ct(i,j,k,2) = ct(i,j,k,2) + vp(l,2)*wght(l,1)*nvolb
+                        ct(i,j,k,3) = ct(i,j,k,3) + vp(l,3)*wght(l,1)*nvolb
+                  endif
+
+                  if (np_cold_foreshock(ip,j,k) .gt. 0.0) then
+                        nvolb = 1.0/(np_cold_foreshock(ip,j,k)*volb)
+                        ct(ip,j,k,1) = ct(ip,j,k,1) + vp(l,1)*wght(l,2)*nvolb
+                        ct(ip,j,k,2) = ct(ip,j,k,2) + vp(l,2)*wght(l,2)*nvolb
+                        ct(ip,j,k,3) = ct(ip,j,k,3) + vp(l,3)*wght(l,2)*nvolb
+                  endif
+
+                  if (np_cold_foreshock(i,j,kp) .gt. 0.0) then
+                        nvolb = 1.0/(np_cold_foreshock(i,j,kp)*volb)
+                        ct(i,j,kp,1) = ct(i,j,kp,1) + vp(l,1)*wght(l,3)*nvolb
+                        ct(i,j,kp,2) = ct(i,j,kp,2) + vp(l,2)*wght(l,3)*nvolb
+                        ct(i,j,kp,3) = ct(i,j,kp,3) + vp(l,3)*wght(l,3)*nvolb
+                  endif
+
+                  if (np_cold_foreshock(ip,j,kp) .gt. 0.0) then
+                        nvolb = 1.0/(np_cold_foreshock(ip,j,kp)*volb)
+                        ct(ip,j,kp,1) = ct(ip,j,kp,1) + vp(l,1)*wght(l,4)*nvolb
+                        ct(ip,j,kp,2) = ct(ip,j,kp,2) + vp(l,2)*wght(l,4)*nvolb
+                        ct(ip,j,kp,3) = ct(ip,j,kp,3) + vp(l,3)*wght(l,4)*nvolb
+                  endif
+
+                  if (np_cold_foreshock(i,jp,k) .gt. 0.0) then
+                        nvolb = 1.0/(np_cold_foreshock(i,jp,k)*volb)
+                        ct(i,jp,k,1) = ct(i,jp,k,1) + vp(l,1)*wght(l,5)*nvolb
+                        ct(i,jp,k,2) = ct(i,jp,k,2) + vp(l,2)*wght(l,5)*nvolb
+                        ct(i,jp,k,3) = ct(i,jp,k,3) + vp(l,3)*wght(l,5)*nvolb
+                  endif
+
+                  if (np_cold_foreshock(ip,jp,k) .gt. 0.0) then
+                        nvolb = 1.0/(np_cold_foreshock(ip,jp,k)*volb)
+                        ct(ip,jp,k,1) = ct(ip,jp,k,1) + vp(l,1)*wght(l,6)*nvolb
+                        ct(ip,jp,k,2) = ct(ip,jp,k,2) + vp(l,2)*wght(l,6)*nvolb
+                        ct(ip,jp,k,3) = ct(ip,jp,k,3) + vp(l,3)*wght(l,6)*nvolb
+                  endif
+
+                  if (np_cold_foreshock(i,jp,kp) .gt. 0.0) then
+                        nvolb = 1.0/(np_cold_foreshock(i,jp,kp)*volb)
+                        ct(i,jp,kp,1) = ct(i,jp,kp,1) + vp(l,1)*wght(l,7)*nvolb
+                        ct(i,jp,kp,2) = ct(i,jp,kp,2) + vp(l,2)*wght(l,7)*nvolb
+                        ct(i,jp,kp,3) = ct(i,jp,kp,3) + vp(l,3)*wght(l,7)*nvolb
+                  endif
+
+                  if (np_cold_foreshock(ip,jp,kp) .gt. 0.0) then
+                        nvolb = 1.0/(np_cold_foreshock(ip,jp,kp)*volb)
+                        ct(ip,jp,kp,1) = ct(ip,jp,kp,1) + vp(l,1)*wght(l,8)*nvolb
+                        ct(ip,jp,kp,2) = ct(ip,jp,kp,2) + vp(l,2)*wght(l,8)*nvolb
+                        ct(ip,jp,kp,3) = ct(ip,jp,kp,3) + vp(l,3)*wght(l,8)*nvolb
+                  endif
+
+	    	      l=l+1
+            enddo
+
+            !Used for periodic boundary conditions
+            call add_boundary_vector(ct)
+            
+            call boundary_vector(ct)
+            
+            call MPI_BARRIER(MPI_COMM_WORLD,ierr)
+            call MPI_ALLREDUCE(ct(:,:,:,:),recvbuf,count,MPI_REAL,MPI_SUM,MPI_COMM_WORLD,ierr)
+            
+            ct(:,:,:,:) = reshape(recvbuf,(/nx,ny,nz,3/))
+            up_cold_foreshock=ct
+
+            call boundary_vector(up_cold_foreshock)      
+            
+      end subroutine update_up_cold_foreshock
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
       subroutine update_up_mixed(vp)
             use dimensions
             use MPI
@@ -735,7 +880,7 @@ module gutsp
             
             l=1
             do while (l .le. Ni_tot) 
-            	do while ( (mix_ind(l) .eq. 0) .and. (l .lt. Ni_tot) )
+            	do while ( (mix_ind(l) .ne. 1) .and. (l .lt. Ni_tot) )
 			      l=l+1
 		      end do
 		      if  (l .ge. Ni_tot) then
@@ -827,7 +972,125 @@ module gutsp
             call boundary_vector(up_mixed)      
             
       end subroutine update_up_mixed
-      
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine update_up_mixed_foreshock(vp)
+            use dimensions
+            use MPI
+            use boundary
+            use grid, only: qx,qy,qz
+            use var_arrays, only: np_mixed_foreshock,up_mixed_foreshock,Ni_tot,ijkp,beta,beta_p,wght,mix_ind
+            implicit none
+            real, intent(in):: vp(Ni_max,3)
+            real:: ct(nx,ny,nz,3), recvbuf(nx*ny*nz*3),volb,nvolb
+            integer:: i,j,k,m,l,ip,jp,kp,count,ierr
+            
+            count=nx*ny*nz*3
+            
+            do i=1,nx
+                  do j=1,ny
+                        do k=1,nz
+                              do m=1,3
+                                    up_mixed_foreshock(i,j,k,m) = 0.0
+                                    ct(i,j,k,m) = 0.0
+                              enddo
+                        enddo
+                  enddo
+            enddo
+            
+            l=1
+            do while (l .le. Ni_tot) 
+            	do while ( (mix_ind(l) .ne. 3) .and. (l .lt. Ni_tot) )
+			      l=l+1
+		      end do
+		      if  (l .ge. Ni_tot) then
+			      EXIT
+		      endif
+            
+            !do l=1,Ni_tot
+                  i=ijkp(l,1)
+                  j=ijkp(l,2)
+                  k=ijkp(l,3)
+                  
+                  ip=i+1
+                  jp=j+1
+                  kp=k+1
+                  
+                  volb = (qx(ip)-qx(i))*(qy(jp)-qy(j))*(qz(kp)-qz(k))*beta*beta_p(l)
+                  
+                  if(np_mixed_foreshock(i,j,k) .gt. 0.0) then                  
+                        nvolb = 1.0/(np_mixed_foreshock(i,j,k)*volb)
+                        ct(i,j,k,1) = ct(i,j,k,1) + vp(l,1)*wght(l,1)*nvolb
+                        ct(i,j,k,2) = ct(i,j,k,2) + vp(l,2)*wght(l,1)*nvolb
+                        ct(i,j,k,3) = ct(i,j,k,3) + vp(l,3)*wght(l,1)*nvolb
+                  endif
+
+                  if (np_mixed_foreshock(ip,j,k) .gt. 0.0) then
+                        nvolb = 1.0/(np_mixed_foreshock(ip,j,k)*volb)
+                        ct(ip,j,k,1) = ct(ip,j,k,1) + vp(l,1)*wght(l,2)*nvolb
+                        ct(ip,j,k,2) = ct(ip,j,k,2) + vp(l,2)*wght(l,2)*nvolb
+                        ct(ip,j,k,3) = ct(ip,j,k,3) + vp(l,3)*wght(l,2)*nvolb
+                  endif
+
+                 if (np_mixed_foreshock(i,j,kp) .gt. 0.0) then
+                        nvolb = 1.0/(np_mixed_foreshock(i,j,kp)*volb)
+                        ct(i,j,kp,1) = ct(i,j,kp,1) + vp(l,1)*wght(l,3)*nvolb
+                        ct(i,j,kp,2) = ct(i,j,kp,2) + vp(l,2)*wght(l,3)*nvolb
+                        ct(i,j,kp,3) = ct(i,j,kp,3) + vp(l,3)*wght(l,3)*nvolb
+                  endif
+
+                  if (np_mixed_foreshock(ip,j,kp) .gt. 0.0) then
+                        nvolb = 1.0/(np_mixed_foreshock(ip,j,kp)*volb)
+                        ct(ip,j,kp,1) = ct(ip,j,kp,1) + vp(l,1)*wght(l,4)*nvolb
+                        ct(ip,j,kp,2) = ct(ip,j,kp,2) + vp(l,2)*wght(l,4)*nvolb
+                        ct(ip,j,kp,3) = ct(ip,j,kp,3) + vp(l,3)*wght(l,4)*nvolb
+                  endif
+
+                  if (np_mixed_foreshock(i,jp,k) .gt. 0.0) then
+                        nvolb = 1.0/(np_mixed_foreshock(i,jp,k)*volb)
+                        ct(i,jp,k,1) = ct(i,jp,k,1) + vp(l,1)*wght(l,5)*nvolb
+                        ct(i,jp,k,2) = ct(i,jp,k,2) + vp(l,2)*wght(l,5)*nvolb
+                        ct(i,jp,k,3) = ct(i,jp,k,3) + vp(l,3)*wght(l,5)*nvolb
+                  endif
+
+                  if (np_mixed_foreshock(ip,jp,k) .gt. 0.0) then
+                        nvolb = 1.0/(np_mixed_foreshock(ip,jp,k)*volb)
+                        ct(ip,jp,k,1) = ct(ip,jp,k,1) + vp(l,1)*wght(l,6)*nvolb
+                        ct(ip,jp,k,2) = ct(ip,jp,k,2) + vp(l,2)*wght(l,6)*nvolb
+                        ct(ip,jp,k,3) = ct(ip,jp,k,3) + vp(l,3)*wght(l,6)*nvolb
+                  endif
+
+                  if (np_mixed_foreshock(i,jp,kp) .gt. 0.0) then
+                        nvolb = 1.0/(np_mixed_foreshock(i,jp,kp)*volb)
+                        ct(i,jp,kp,1) = ct(i,jp,kp,1) + vp(l,1)*wght(l,7)*nvolb
+                        ct(i,jp,kp,2) = ct(i,jp,kp,2) + vp(l,2)*wght(l,7)*nvolb
+                        ct(i,jp,kp,3) = ct(i,jp,kp,3) + vp(l,3)*wght(l,7)*nvolb
+                  endif
+
+                  if (np_mixed_foreshock(ip,jp,kp) .gt. 0.0) then
+                        nvolb = 1.0/(np_mixed_foreshock(ip,jp,kp)*volb)
+                        ct(ip,jp,kp,1) = ct(ip,jp,kp,1) + vp(l,1)*wght(l,8)*nvolb
+                        ct(ip,jp,kp,2) = ct(ip,jp,kp,2) + vp(l,2)*wght(l,8)*nvolb
+                        ct(ip,jp,kp,3) = ct(ip,jp,kp,3) + vp(l,3)*wght(l,8)*nvolb
+                  endif
+
+		      l=l+1
+
+            enddo
+            
+            !Used for periodic boundary conditions
+            call add_boundary_vector(ct)
+              
+            call boundary_vector(ct)
+            
+            call MPI_BARRIER(MPI_COMM_WORLD,ierr)
+            call MPI_ALLREDUCE(ct(:,:,:,:),recvbuf,count,MPI_REAL,MPI_SUM,MPI_COMM_WORLD,ierr)
+            
+            ct(:,:,:,:) = reshape(recvbuf,(/nx,ny,nz,3/))
+            up_mixed_foreshock=ct
+
+            call boundary_vector(up_mixed_foreshock)      
+            
+      end subroutine update_up_mixed_foreshock
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine get_temperature()
             use dimensions
@@ -1076,7 +1339,7 @@ module gutsp
             l=1
 
             do while (l .le. Ni_tot)
-            	do while ( (mix_ind(l) .eq. 0) .and. (l .lt. Ni_tot) )
+            	do while ( (mix_ind(l) .ne. 1) .and. (l .lt. Ni_tot) )
 			      l=l+1
 		      end do			
                   if  (l .ge. Ni_tot) then
@@ -1117,7 +1380,72 @@ module gutsp
             call boundary_scalar(np_mixed)
             
       end subroutine update_np_mixed
-      
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine update_np_mixed_foreshock()
+            ! Weight density to eight nearest grid points
+                        use dimensions
+                        use MPI
+                        use grid, only: dx_grid,dy_grid,dz_grid
+                        use boundary
+                        use var_arrays, only: np_mixed_foreshock,Ni_tot,ijkp,beta,beta_p,wght,mix_ind
+                        implicit none
+                        real:: volb, recvbuf(nx*ny*nz)
+                        integer:: i,j,k,l,ip,jp,kp,ierr,count
+                        
+                        count = nx*ny*nz
+                        
+                        do i=1,nx
+                              do j=1,ny
+                                    do k=1,nz
+                                          np_mixed_foreshock(i,j,k) = 0.0
+                                    enddo
+                              enddo
+                        enddo
+            
+                        l=1
+            
+                        do while (l .le. Ni_tot)
+                              do while ( (mix_ind(l) .ne. 3) .and. (l .lt. Ni_tot) )
+                                    l=l+1
+                              end do			
+                              if  (l .ge. Ni_tot) then
+                                    EXIT
+                              endif
+            
+                              i=ijkp(l,1)
+                              j=ijkp(l,2)
+                              k=ijkp(l,3)
+                              
+                              ip=i+1
+                              jp=j+1
+                              kp=k+1
+                              
+                              volb = 1.0/(dx_grid(i)*dy_grid(j)*dz_grid(k)*beta*beta_p(l))
+                              
+                              np_mixed_foreshock(i,j,k) = np_mixed_foreshock(i,j,k) + wght(l,1)*volb
+                              np_mixed_foreshock(ip,j,k) = np_mixed_foreshock(ip,j,k) + wght(l,2)*volb
+                              np_mixed_foreshock(i,j,kp) = np_mixed_foreshock(i,j,kp) + wght(l,3)*volb
+                              np_mixed_foreshock(ip,j,kp) = np_mixed_foreshock(ip,j,kp) + wght(l,4)*volb
+                              np_mixed_foreshock(i,jp,k) = np_mixed_foreshock(i,jp,k) + wght(l,5)*volb
+                              np_mixed_foreshock(ip,jp,k) = np_mixed_foreshock(ip,jp,k) + wght(l,6)*volb
+                              np_mixed_foreshock(i,jp,kp) = np_mixed_foreshock(i,jp,kp) + wght(l,7)*volb
+                              np_mixed_foreshock(ip,jp,kp) = np_mixed_foreshock(ip,jp,kp) + wght(l,8)*volb
+                              
+                              l=l+1
+            
+                        end do
+                              
+                        !Used for periodic boundary conditions
+                        call add_boundary_scalar(np_mixed_foreshock)      
+                        
+                        call MPI_BARRIER(MPI_COMM_WORLD,ierr)
+                        call MPI_ALLREDUCE(np_mixed_foreshock(:,:,:),recvbuf,count,MPI_REAL,MPI_SUM,MPI_COMM_WORLD,ierr)
+                        
+                        np_mixed_foreshock(:,:,:) = reshape(recvbuf,(/nx,ny,nz/))
+                        
+                        call boundary_scalar(np_mixed_foreshock)
+                        
+                  end subroutine update_np_mixed_foreshock     
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 subroutine get_temperature_mixed()
             use dimensions
@@ -1144,7 +1472,7 @@ subroutine get_temperature_mixed()
             
             l=1
             do while (l .le. Ni_tot)
-            	do while ( (mix_ind(l) .eq. 0) .and. (l .lt. Ni_tot) )
+            	do while ( (mix_ind(l) .ne. 1) .and. (l .lt. Ni_tot) )
 			      l=l+1
 		      end do
                   if  (l .ge. Ni_tot) then
@@ -1247,7 +1575,7 @@ subroutine get_temperature_mixed()
 
             l=1
             do while (l .le. Ni_tot) 
-            	do while ( (mix_ind(l) .eq. 0) .and. (l .lt. Ni_tot) )
+            	do while ( (mix_ind(l) .ne. 1) .and. (l .lt. Ni_tot) )
 			      l=l+1
 		      end do
 		      if  (l .ge. Ni_tot) then
@@ -1360,7 +1688,248 @@ subroutine get_temperature_mixed()
             call boundary_vector(tp_mixed)
             
       end subroutine get_temperature_mixed
-      
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+      subroutine get_temperature_mixed_foreshock()
+            use dimensions
+            use MPI
+            use boundary
+            use inputs, only: mion
+            use grid, only: qx,qy,qz
+            use var_arrays, only: vp,np_mixed_foreshock,temp_p_mixed_foreshock,Ni_tot,ijkp,beta,beta_p,wght,mix_ind,tp_mixed_foreshock
+            implicit none
+            real:: recvbuf(nx*ny*nz*3),up2(nx,ny,nz,3),up_ave(nx,ny,nz,3),ct(nx,ny,nz,3),volb,nvolb,mvp(Ni_tot,3)
+            integer:: i,j,k,l,m,ip,jp,kp,count,ierr
+            
+            count = nx*ny*nz*3
+            
+            up2(:,:,:,:) = 0.0
+            up_ave(:,:,:,:) = 0.0
+            ct(:,:,:,:) = 0.0
+            
+            do l=1,Ni_tot
+            	do m=1,3
+                        mvp(l,m) = vp(l,m)
+                  enddo
+            enddo
+            
+            l=1
+            do while (l .le. Ni_tot)
+            	do while ( (mix_ind(l) .ne. 3) .and. (l .lt. Ni_tot) )
+			      l=l+1
+		      end do
+                  if  (l .ge. Ni_tot) then
+                        EXIT
+                  endif
+
+                  i=ijkp(l,1)
+                  j=ijkp(l,2)
+                  k=ijkp(l,3)
+                  
+                  ip=i+1
+                  jp=j+1
+                  kp=k+1
+                  
+                  volb = (qx(ip)-qx(i))*(qy(jp)-qy(j))*(qz(kp)-qz(k))*beta*beta_p(l)
+                  
+                  if (np_mixed_foreshock(i,j,k) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(i,j,k)*volb
+                        ct(i,j,k,1) = ct(i,j,k,1) + mvp(l,1)**2*wght(l,1)/nvolb  
+                        ct(i,j,k,2) = ct(i,j,k,2) + mvp(l,2)**2*wght(l,1)/nvolb
+                        ct(i,j,k,3) = ct(i,j,k,3) + mvp(l,3)**2*wght(l,1)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(ip,j,k) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(ip,j,k)*volb
+                        ct(ip,j,k,1) = ct(ip,j,k,1) + mvp(l,1)**2*wght(l,2)/nvolb
+                        ct(ip,j,k,2) = ct(ip,j,k,2) + mvp(l,2)**2*wght(l,2)/nvolb
+                        ct(ip,j,k,3) = ct(ip,j,k,3) + mvp(l,3)**2*wght(l,2)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(i,j,kp) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(i,j,kp)*volb
+                        ct(i,j,kp,1) = ct(i,j,kp,1) + mvp(l,1)**2*wght(l,3)/nvolb
+                        ct(i,j,kp,2) = ct(i,j,kp,2) + mvp(l,2)**2*wght(l,3)/nvolb
+                        ct(i,j,kp,3) = ct(i,j,kp,3) + mvp(l,3)**2*wght(l,3)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(ip,j,kp) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(ip,j,kp)*volb
+                        ct(ip,j,kp,1) = ct(ip,j,kp,1) + mvp(l,1)**2*wght(l,4)/nvolb
+                        ct(ip,j,kp,2) = ct(ip,j,kp,2) + mvp(l,2)**2*wght(l,4)/nvolb
+                        ct(ip,j,kp,3) = ct(ip,j,kp,3) + mvp(l,3)**2*wght(l,4)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(i,jp,k) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(i,jp,k)*volb
+                        ct(i,jp,k,1) = ct(i,jp,k,1) + mvp(l,1)**2*wght(l,5)/nvolb
+                        ct(i,jp,k,2) = ct(i,jp,k,2) + mvp(l,2)**2*wght(l,5)/nvolb
+                        ct(i,jp,k,3) = ct(i,jp,k,3) + mvp(l,3)**2*wght(l,5)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(ip,jp,k) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(ip,jp,k)*volb
+                        ct(ip,jp,k,1) = ct(ip,jp,k,1) + mvp(l,1)**2*wght(l,6)/nvolb
+                        ct(ip,jp,k,2) = ct(ip,jp,k,2) + mvp(l,2)**2*wght(l,6)/nvolb
+                        ct(ip,jp,k,3) = ct(ip,jp,k,3) + mvp(l,3)**2*wght(l,6)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(i,jp,kp) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(i,jp,kp)*volb
+                        ct(i,jp,kp,1) = ct(i,jp,kp,1) + mvp(l,1)**2*wght(l,7)/nvolb
+                        ct(i,jp,kp,2) = ct(i,jp,kp,2) + mvp(l,2)**2*wght(l,7)/nvolb
+                        ct(i,jp,kp,3) = ct(i,jp,kp,3) + mvp(l,3)**2*wght(l,7)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(ip,jp,kp) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(ip,jp,kp)*volb
+                        ct(ip,jp,kp,1) = ct(ip,jp,kp,1) + mvp(l,1)**2*wght(l,8)/nvolb
+                        ct(ip,jp,kp,2) = ct(ip,jp,kp,2) + mvp(l,2)**2*wght(l,8)/nvolb
+                        ct(ip,jp,kp,3) = ct(ip,jp,kp,3) + mvp(l,3)**2*wght(l,8)/nvolb
+                  endif
+                  
+                  l=l+1
+         
+         end do
+            
+            !Used for periodic boundary conditions
+            call add_boundary_vector(ct)
+            
+            call boundary_vector(ct)
+                        
+            call MPI_BARRIER(MPI_COMM_WORLD,ierr)
+            call MPI_ALLREDUCE(ct(:,:,:,:),recvbuf,count,MPI_REAL,MPI_SUM,MPI_COMM_WORLD,ierr)
+            
+            ct(:,:,:,:) = reshape(recvbuf,(/nx,ny,nz,3/))
+            
+            do i=1,nx-1
+                  do j=1,ny-1
+                        do k=1,nz-1
+                              up2(i,j,k,1) = 0.5*(ct(i,j,k,1)+ct(i+1,j,k,1))
+                              up2(i,j,k,2) = 0.5*(ct(i,j,k,2)+ct(i,j+1,k,2))
+                              up2(i,j,k,3) = 0.5*(ct(i,j,k,3)+ct(i,j,k+1,3))
+                        enddo
+                  enddo
+            enddo
+            
+            call boundary_vector(up2)
+            
+            ct(:,:,:,:) = 0.0
+
+            l=1
+            do while (l .le. Ni_tot) 
+            	do while ( (mix_ind(l) .ne. 3) .and. (l .lt. Ni_tot) )
+			      l=l+1
+		      end do
+		      if  (l .ge. Ni_tot) then
+			      EXIT
+		      endif
+                  i=ijkp(l,1)
+                  j=ijkp(l,2)
+                  k=ijkp(l,3)
+                  
+                  ip=i+1
+                  jp=j+1
+                  kp=k+1
+                  
+                  volb = (qx(ip)-qx(i))*(qy(jp)-qy(j))*(qz(kp)-qz(k))*beta*beta_p(l)
+                  
+                  if (np_mixed_foreshock(i,j,k) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(i,j,k)*volb
+                        ct(i,j,k,1) = ct(i,j,k,1) + mvp(l,1)*wght(l,1)/nvolb  
+                        ct(i,j,k,2) = ct(i,j,k,2) + mvp(l,2)*wght(l,1)/nvolb
+                        ct(i,j,k,3) = ct(i,j,k,3) + mvp(l,3)*wght(l,1)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(ip,j,k) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(ip,j,k)*volb
+                        ct(ip,j,k,1) = ct(ip,j,k,1) + mvp(l,1)*wght(l,2)/nvolb
+                        ct(ip,j,k,2) = ct(ip,j,k,2) + mvp(l,2)*wght(l,2)/nvolb
+                        ct(ip,j,k,3) = ct(ip,j,k,3) + mvp(l,3)*wght(l,2)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(i,j,kp) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(i,j,kp)*volb
+                        ct(i,j,kp,1) = ct(i,j,kp,1) + mvp(l,1)*wght(l,3)/nvolb
+                        ct(i,j,kp,2) = ct(i,j,kp,2) + mvp(l,2)*wght(l,3)/nvolb
+                        ct(i,j,kp,3) = ct(i,j,kp,3) + mvp(l,3)*wght(l,3)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(ip,j,kp) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(ip,j,kp)*volb
+                        ct(ip,j,kp,1) = ct(ip,j,kp,1) + mvp(l,1)*wght(l,4)/nvolb
+                        ct(ip,j,kp,2) = ct(ip,j,kp,2) + mvp(l,2)*wght(l,4)/nvolb
+                        ct(ip,j,kp,3) = ct(ip,j,kp,3) + mvp(l,3)*wght(l,4)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(i,jp,k) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(i,jp,k)*volb
+                        ct(i,jp,k,1) = ct(i,jp,k,1) + mvp(l,1)*wght(l,5)/nvolb
+                        ct(i,jp,k,2) = ct(i,jp,k,2) + mvp(l,2)*wght(l,5)/nvolb
+                        ct(i,jp,k,3) = ct(i,jp,k,3) + mvp(l,3)*wght(l,5)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(ip,jp,k) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(ip,jp,k)*volb
+                        ct(ip,jp,k,1) = ct(ip,jp,k,1) + mvp(l,1)*wght(l,6)/nvolb
+                        ct(ip,jp,k,2) = ct(ip,jp,k,2) + mvp(l,2)*wght(l,6)/nvolb
+                        ct(ip,jp,k,3) = ct(ip,jp,k,3) + mvp(l,3)*wght(l,6)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(i,jp,kp) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(i,jp,kp)*volb
+                        ct(i,jp,kp,1) = ct(i,jp,kp,1) + mvp(l,1)*wght(l,7)/nvolb
+                        ct(i,jp,kp,2) = ct(i,jp,kp,2) + mvp(l,2)*wght(l,7)/nvolb
+                        ct(i,jp,kp,3) = ct(i,jp,kp,3) + mvp(l,3)*wght(l,7)/nvolb
+                  endif
+
+                  if (np_mixed_foreshock(ip,jp,kp) .gt. 0.0) then
+                        nvolb = np_mixed_foreshock(ip,jp,kp)*volb
+                        ct(ip,jp,kp,1) = ct(ip,jp,kp,1) + mvp(l,1)*wght(l,8)/nvolb
+                        ct(ip,jp,kp,2) = ct(ip,jp,kp,2) + mvp(l,2)*wght(l,8)/nvolb
+                        ct(ip,jp,kp,3) = ct(ip,jp,kp,3) + mvp(l,3)*wght(l,8)/nvolb
+                  endif
+
+                  l=l+1
+            enddo
+
+            !Used for periodic boundary conditions
+            call add_boundary_vector(ct)
+            
+            call boundary_vector(ct)
+            
+            call MPI_BARRIER(MPI_COMM_WORLD,ierr)
+            call MPI_ALLREDUCE(ct(:,:,:,:),recvbuf,count,MPI_REAL,MPI_SUM,MPI_COMM_WORLD,ierr)
+            
+            ct(:,:,:,:) = reshape(recvbuf,(/nx,ny,nz,3/))
+            
+            do i=1,nx-1
+                  do j=1,ny-1
+                        do k=1,nz-1
+                              up_ave(i,j,k,1) = 0.5*(ct(i,j,k,1)+ct(i+1,j,k,1))
+                              up_ave(i,j,k,2) = 0.5*(ct(i,j,k,2)+ct(i,j+1,k,2))
+                              up_ave(i,j,k,3) = 0.5*(ct(i,j,k,3)+ct(i,j,k+1,3))
+                        enddo
+                  enddo
+            enddo
+            
+            do i=1,nx
+                  do j=1,ny
+                        do k=1,nz
+                              temp_p_mixed_foreshock(i,j,k) = (1./3.)*1e6*mion*( &
+                                    up2(i,j,k,1) - up_ave(i,j,k,1)**2 + &
+                                    up2(i,j,k,2) - up_ave(i,j,k,2)**2 + & 
+                                    up2(i,j,k,3) - up_ave(i,j,k,3)**2)
+                              tp_mixed_foreshock(i,j,k,1) = (1./3.)*1e6*mion*(up2(i,j,k,1) - up_ave(i,j,k,1)**2)
+                              tp_mixed_foreshock(i,j,k,2) = (1./3.)*1e6*mion*(up2(i,j,k,2) - up_ave(i,j,k,2)**2)
+                              tp_mixed_foreshock(i,j,k,3) = (1./3.)*1e6*mion*(up2(i,j,k,3) - up_ave(i,j,k,3)**2)
+                        enddo
+                  enddo
+            enddo
+
+            call boundary_scalar(temp_p_mixed_foreshock)
+            call boundary_vector(tp_mixed_foreshock)
+            
+      end subroutine get_temperature_mixed_foreshock      
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      subroutine update_np_cold()
 ! Weight density to eight nearest grid points
@@ -1428,7 +1997,74 @@ subroutine get_temperature_mixed()
             call boundary_scalar(np_cold)
             
       end subroutine update_np_cold
-      
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine update_np_cold_foreshock()
+            ! Weight density to eight nearest grid points
+                        use dimensions
+                        use MPI
+                        use grid, only: dx_grid,dy_grid,dz_grid
+                        use boundary
+                        use var_arrays, only: np_cold_foreshock,Ni_tot,ijkp,beta,beta_p,wght,mix_ind
+                        use mult_proc
+                        implicit none
+                        real:: volb, recvbuf(nx*ny*nz)
+                        integer:: i,j,k,l,ip,jp,kp,ierr,count
+                        
+                        count = nx*ny*nz
+            
+                        do i=1,nx
+                              do j=1,ny
+                                    do k=1,nz
+                                          np_cold_foreshock(i,j,k) = 0.0
+                                    enddo
+                              enddo
+                        enddo
+            
+                        l=1
+                       
+                        do while (l .le. Ni_tot)
+                              do while ( (mix_ind(l) .ne. 2) .and. (l .lt. Ni_tot) )
+                                    l=l+1
+                              end do
+                              if  (l .ge. Ni_tot) then
+                                    EXIT
+                              endif
+                        
+                              i=ijkp(l,1)
+                              j=ijkp(l,2)
+                              k=ijkp(l,3)
+                              
+                              ip=i+1
+                              jp=j+1
+                              kp=k+1
+                              
+                              volb = 1.0/(dx_grid(i)*dy_grid(j)*dz_grid(k)*beta*beta_p(l))
+                              
+                              np_cold_foreshock(i,j,k) = np_cold_foreshock(i,j,k) + wght(l,1)*volb
+                              np_cold_foreshock(ip,j,k) = np_cold_foreshock(ip,j,k) + wght(l,2)*volb
+                              np_cold_foreshock(i,j,kp) = np_cold_foreshock(i,j,kp) + wght(l,3)*volb
+                              np_cold_foreshock(ip,j,kp) = np_cold_foreshock(ip,j,kp) + wght(l,4)*volb
+                              np_cold_foreshock(i,jp,k) = np_cold_foreshock(i,jp,k) + wght(l,5)*volb
+                              np_cold_foreshock(ip,jp,k) = np_cold_foreshock(ip,jp,k) + wght(l,6)*volb
+                              np_cold_foreshock(i,jp,kp) = np_cold_foreshock(i,jp,kp) + wght(l,7)*volb
+                              np_cold_foreshock(ip,jp,kp) = np_cold_foreshock(ip,jp,kp) + wght(l,8)*volb
+                              
+                              l=l+1  
+            
+                        enddo
+                        
+                        !Used for periodic boundary conditions
+                        call add_boundary_scalar(np_cold_foreshock)
+                        
+                        call MPI_BARRIER(MPI_COMM_WORLD,ierr)
+                        call MPI_ALLREDUCE(np_cold_foreshock(:,:,:),recvbuf,count,MPI_REAL,MPI_SUM,MPI_COMM_WORLD,ierr)
+                        
+                        np_cold_foreshock(:,:,:) = reshape(recvbuf,(/nx,ny,nz/))
+                        
+                        call boundary_scalar(np_cold_foreshock)
+                        
+                  end subroutine update_np_cold_foreshock
+                       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 subroutine get_temperature_cold()
             use dimensions
@@ -1678,6 +2314,254 @@ subroutine get_temperature_cold()
       end subroutine get_temperature_cold
       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine get_temperature_cold_foreshock()
+            use dimensions
+            use MPI
+            use boundary
+            use inputs, only: mion
+            use grid, only: qx,qy,qz
+            use var_arrays, only: vp,np_cold_foreshock,temp_p_cold_foreshock,Ni_tot,ijkp,beta,beta_p,wght,mix_ind,tp_cold_foreshock
+            implicit none
+            real:: recvbuf(nx*ny*nz*3),up2(nx,ny,nz,3),up_ave(nx,ny,nz,3),ct(nx,ny,nz,3),volb,nvolb,mvp(Ni_tot,3)
+            integer:: i,j,k,l,m,ip,jp,kp,count,ierr
+            
+            count = nx*ny*nz*3
+            
+            up2(:,:,:,:) = 0.0
+            up_ave(:,:,:,:) = 0.0
+            ct(:,:,:,:) = 0.0
+            
+            
+            do l=1,Ni_tot
+            	do m=1,3
+                        mvp(l,m) = vp(l,m)
+                  enddo
+            enddo
+
+            l=1
+            do while (l .le. Ni_tot)
+            	do while ( (mix_ind(l) .ne. 2) .and. (l .lt. Ni_tot) )
+			      l=l+1
+		      end do
+		      if  (l .ge. Ni_tot) then
+		      	EXIT
+		      endif
+
+                  i=ijkp(l,1)
+                  j=ijkp(l,2)
+                  k=ijkp(l,3)
+                  
+                  ip=i+1
+                  jp=j+1
+                  kp=k+1
+                  
+                  volb = (qx(ip)-qx(i))*(qy(jp)-qy(j))*(qz(kp)-qz(k))*beta*beta_p(l)
+                  
+                  if (np_cold_foreshock(i,j,k) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(i,j,k)*volb
+                        ct(i,j,k,1) = ct(i,j,k,1) + mvp(l,1)**2*wght(l,1)/nvolb  
+                        ct(i,j,k,2) = ct(i,j,k,2) + mvp(l,2)**2*wght(l,1)/nvolb
+                        ct(i,j,k,3) = ct(i,j,k,3) + mvp(l,3)**2*wght(l,1)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(ip,j,k) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(ip,j,k)*volb
+                        ct(ip,j,k,1) = ct(ip,j,k,1) + mvp(l,1)**2*wght(l,2)/nvolb
+                        ct(ip,j,k,2) = ct(ip,j,k,2) + mvp(l,2)**2*wght(l,2)/nvolb
+                        ct(ip,j,k,3) = ct(ip,j,k,3) + mvp(l,3)**2*wght(l,2)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(i,j,kp) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(i,j,kp)*volb
+                        ct(i,j,kp,1) = ct(i,j,kp,1) + mvp(l,1)**2*wght(l,3)/nvolb
+                        ct(i,j,kp,2) = ct(i,j,kp,2) + mvp(l,2)**2*wght(l,3)/nvolb
+                        ct(i,j,kp,3) = ct(i,j,kp,3) + mvp(l,3)**2*wght(l,3)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(ip,j,kp) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(ip,j,kp)*volb
+                        ct(ip,j,kp,1) = ct(ip,j,kp,1) + mvp(l,1)**2*wght(l,4)/nvolb
+                        ct(ip,j,kp,2) = ct(ip,j,kp,2) + mvp(l,2)**2*wght(l,4)/nvolb
+                        ct(ip,j,kp,3) = ct(ip,j,kp,3) + mvp(l,3)**2*wght(l,4)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(i,jp,k) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(i,jp,k)*volb
+                        ct(i,jp,k,1) = ct(i,jp,k,1) + mvp(l,1)**2*wght(l,5)/nvolb
+                        ct(i,jp,k,2) = ct(i,jp,k,2) + mvp(l,2)**2*wght(l,5)/nvolb
+                        ct(i,jp,k,3) = ct(i,jp,k,3) + mvp(l,3)**2*wght(l,5)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(ip,jp,k) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(ip,jp,k)*volb
+                        ct(ip,jp,k,1) = ct(ip,jp,k,1) + mvp(l,1)**2*wght(l,6)/nvolb
+                        ct(ip,jp,k,2) = ct(ip,jp,k,2) + mvp(l,2)**2*wght(l,6)/nvolb
+                        ct(ip,jp,k,3) = ct(ip,jp,k,3) + mvp(l,3)**2*wght(l,6)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(i,jp,kp) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(i,jp,kp)*volb
+                        ct(i,jp,kp,1) = ct(i,jp,kp,1) + mvp(l,1)**2*wght(l,7)/nvolb
+                        ct(i,jp,kp,2) = ct(i,jp,kp,2) + mvp(l,2)**2*wght(l,7)/nvolb
+                        ct(i,jp,kp,3) = ct(i,jp,kp,3) + mvp(l,3)**2*wght(l,7)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(ip,jp,kp) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(ip,jp,kp)*volb
+                        ct(ip,jp,kp,1) = ct(ip,jp,kp,1) + mvp(l,1)**2*wght(l,8)/nvolb
+                        ct(ip,jp,kp,2) = ct(ip,jp,kp,2) + mvp(l,2)**2*wght(l,8)/nvolb
+                        ct(ip,jp,kp,3) = ct(ip,jp,kp,3) + mvp(l,3)**2*wght(l,8)/nvolb
+                  endif
+
+                  l=l+1
+
+         enddo
+            
+            !Used for periodic boundary conditions
+            call add_boundary_vector(ct)
+
+            call boundary_vector(ct)
+            
+            call MPI_BARRIER(MPI_COMM_WORLD,ierr)
+            call MPI_ALLREDUCE(ct(:,:,:,:),recvbuf,count,MPI_REAL,MPI_SUM,MPI_COMM_WORLD,ierr)
+            
+            ct(:,:,:,:) = reshape(recvbuf,(/nx,ny,nz,3/))
+            
+            do i=1,nx-1
+                  do j=1,ny-1
+                        do k=1,nz-1
+                              up2(i,j,k,1) = 0.5*(ct(i,j,k,1)+ct(i+1,j,k,1))
+                              up2(i,j,k,2) = 0.5*(ct(i,j,k,2)+ct(i,j+1,k,2))
+                              up2(i,j,k,3) = 0.5*(ct(i,j,k,3)+ct(i,j,k+1,3))
+                        enddo
+                  enddo
+            enddo
+            
+            call boundary_vector(up2)
+            
+            ct(:,:,:,:) = 0.0
+
+            l=1
+            do while (l .le. Ni_tot) 
+            	do while ( (mix_ind(l) .ne. 2) .and. (l .lt. Ni_tot) )
+			      l=l+1
+		      end do
+		      if  (l .ge. Ni_tot) then
+			      EXIT
+		      endif
+		
+                  i=ijkp(l,1)
+                  j=ijkp(l,2)
+                  k=ijkp(l,3)
+                  
+                  ip=i+1
+                  jp=j+1
+                  kp=k+1
+                  
+                  volb = (qx(ip)-qx(i))*(qy(jp)-qy(j))*(qz(kp)-qz(k))*beta*beta_p(l)
+                  
+                  if (np_cold_foreshock(i,j,k) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(i,j,k)*volb
+                        ct(i,j,k,1) = ct(i,j,k,1) + mvp(l,1)*wght(l,1)/nvolb  
+                        ct(i,j,k,2) = ct(i,j,k,2) + mvp(l,2)*wght(l,1)/nvolb
+                        ct(i,j,k,3) = ct(i,j,k,3) + mvp(l,3)*wght(l,1)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(ip,j,k) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(ip,j,k)*volb
+                        ct(ip,j,k,1) = ct(ip,j,k,1) + mvp(l,1)*wght(l,2)/nvolb
+                        ct(ip,j,k,2) = ct(ip,j,k,2) + mvp(l,2)*wght(l,2)/nvolb
+                        ct(ip,j,k,3) = ct(ip,j,k,3) + mvp(l,3)*wght(l,2)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(i,j,kp) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(i,j,kp)*volb
+                        ct(i,j,kp,1) = ct(i,j,kp,1) + mvp(l,1)*wght(l,3)/nvolb
+                        ct(i,j,kp,2) = ct(i,j,kp,2) + mvp(l,2)*wght(l,3)/nvolb
+                        ct(i,j,kp,3) = ct(i,j,kp,3) + mvp(l,3)*wght(l,3)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(ip,j,kp) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(ip,j,kp)*volb
+                        ct(ip,j,kp,1) = ct(ip,j,kp,1) + mvp(l,1)*wght(l,4)/nvolb
+                        ct(ip,j,kp,2) = ct(ip,j,kp,2) + mvp(l,2)*wght(l,4)/nvolb
+                        ct(ip,j,kp,3) = ct(ip,j,kp,3) + mvp(l,3)*wght(l,4)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(i,jp,k) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(i,jp,k)*volb
+                        ct(i,jp,k,1) = ct(i,jp,k,1) + mvp(l,1)*wght(l,5)/nvolb
+                        ct(i,jp,k,2) = ct(i,jp,k,2) + mvp(l,2)*wght(l,5)/nvolb
+                        ct(i,jp,k,3) = ct(i,jp,k,3) + mvp(l,3)*wght(l,5)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(ip,jp,k) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(ip,jp,k)*volb
+                        ct(ip,jp,k,1) = ct(ip,jp,k,1) + mvp(l,1)*wght(l,6)/nvolb
+                        ct(ip,jp,k,2) = ct(ip,jp,k,2) + mvp(l,2)*wght(l,6)/nvolb
+                        ct(ip,jp,k,3) = ct(ip,jp,k,3) + mvp(l,3)*wght(l,6)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(i,jp,kp) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(i,jp,kp)*volb
+                        ct(i,jp,kp,1) = ct(i,jp,kp,1) + mvp(l,1)*wght(l,7)/nvolb
+                        ct(i,jp,kp,2) = ct(i,jp,kp,2) + mvp(l,2)*wght(l,7)/nvolb
+                        ct(i,jp,kp,3) = ct(i,jp,kp,3) + mvp(l,3)*wght(l,7)/nvolb
+                  endif
+
+                  if (np_cold_foreshock(ip,jp,kp) .gt. 0.0) then
+                        nvolb = np_cold_foreshock(ip,jp,kp)*volb
+                        ct(ip,jp,kp,1) = ct(ip,jp,kp,1) + mvp(l,1)*wght(l,8)/nvolb
+                        ct(ip,jp,kp,2) = ct(ip,jp,kp,2) + mvp(l,2)*wght(l,8)/nvolb
+                        ct(ip,jp,kp,3) = ct(ip,jp,kp,3) + mvp(l,3)*wght(l,8)/nvolb
+                  endif
+                  
+                  l=l+1
+         
+         enddo
+            
+            !Used for periodic boundary conditions
+            call add_boundary_vector(ct)
+            
+            call boundary_vector(ct)
+            
+            call MPI_BARRIER(MPI_COMM_WORLD,ierr)
+            call MPI_ALLREDUCE(ct(:,:,:,:),recvbuf,count,MPI_REAL,MPI_SUM,MPI_COMM_WORLD,ierr)
+            
+            ct(:,:,:,:) = reshape(recvbuf,(/nx,ny,nz,3/))
+            
+            do i=1,nx-1
+                  do j=1,ny-1
+                        do k=1,nz-1
+                              up_ave(i,j,k,1) = 0.5*(ct(i,j,k,1)+ct(i+1,j,k,1))
+                              up_ave(i,j,k,2) = 0.5*(ct(i,j,k,2)+ct(i,j+1,k,2))
+                              up_ave(i,j,k,3) = 0.5*(ct(i,j,k,3)+ct(i,j,k+1,3))
+                        enddo
+                  enddo
+            enddo
+            
+            do i=1,nx
+                  do j=1,ny
+                        do k=1,nz
+                              temp_p_cold_foreshock(i,j,k) = (1./3.)*1e6*mion*( &
+                                    up2(i,j,k,1) - up_ave(i,j,k,1)**2 + &
+                                    up2(i,j,k,2) - up_ave(i,j,k,2)**2 + & 
+                                    up2(i,j,k,3) - up_ave(i,j,k,3)**2)
+                                    
+                              tp_cold_foreshock(i,j,k,1) = (1./3.)*1e6*mion*(up2(i,j,k,1) - up_ave(i,j,k,1)**2)
+                              tp_cold_foreshock(i,j,k,2) = (1./3.)*1e6*mion*(up2(i,j,k,2) - up_ave(i,j,k,2)**2)
+                              tp_cold_foreshock(i,j,k,3) = (1./3.)*1e6*mion*(up2(i,j,k,3) - up_ave(i,j,k,3)**2)
+                        enddo
+                  enddo
+            enddo
+
+	    
+            call boundary_scalar(temp_p_cold_foreshock)
+            call boundary_vector(tp_cold_foreshock)
+            
+      end subroutine get_temperature_cold_foreshock
+      
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!     
       subroutine get_pindex(l)
             use dimensions
             use inputs, only: dx,dy
@@ -1858,7 +2742,9 @@ subroutine get_temperature_cold()
                         !x boundaries
                         !if ( (xp(l,1) .lt. (qx(2)-qx(1)) )  .and. ( vp(l,1) .lt. 0  ) )then!  .and. (vp(l,1) .lt. 0) )  then
                         if ( (xp(l,1) .lt. 0)   .and. (vp(l,1) .lt. 0) )  then
-                              call remove_ion(l)                 
+                              !call remove_ion(l)        
+                              vp(l,1) = 0.0
+                              vp1(l,1) = 0.0  
                         else if ( ( xp(l,1) .ge. qx(nx-1) )) then! .and. ( vp(l,1) .gt. 0 ) .and. (mix_ind(l) .eq. 1) ) then 
                               
                               !vmag = sqrt(vp(l,1)*vp(l,1) + vp(l,2)*vp(l,2) + vp(l,3)*vp(l,3))
