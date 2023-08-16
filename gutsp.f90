@@ -2695,11 +2695,11 @@ subroutine get_temperature_cold()
                         !x boundaries
                         if ( (xp(l,1) .lt. 0) )then!  .and. (vp(l,1) .lt. 0) )  then
                          !     call remove_ion(l)
-                        else if ( ( xp(l,1) .gt. qx(nx) )) then! .and. ( vp(l,1) .gt. 0 ) .and. (mix_ind(l) .eq. 1) ) then
+                        else if ( ( xp(l,1) .gt. (qx(nx)+0.0*qx(1)) )) then! .and. ( vp(l,1) .gt. 0 ) .and. (mix_ind(l) .eq. 1) ) then
                               call remove_ion(l)     
                               
                         !z boundaries      
-                        else if (xp(l,3) .ge. (qz(nz-1)) ) then
+                        else if (xp(l,3) .ge. (qz(nz)) ) then
                               vp(l,3) = -vp(l,3)
 
                               xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(nx-1)-qx(1))

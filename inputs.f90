@@ -13,7 +13,7 @@ module inputs
             
       real, parameter:: amu=1.6605e-27!, mion = 3.841e-26
       integer:: mp, nt, nout, boundx,ddthickness,FSBeamWidth, quasiparallel
-      integer:: Ni_tot_0
+      integer:: Ni_tot_0, r_0
 
       real, parameter:: q=1.6e-19         !electron charge
 
@@ -105,6 +105,8 @@ module inputs
                  write(*,*) 'Number of quasiparallel sides........',quasiparallel
                  read(100,*) ByConeAngle
                  write(*,*) 'By Cone Angle........', ByConeAngle
+                 read(100,*) r_0
+                 write(*,*) 'r_0........', r_0
                  read(100,*) out_dir
                  write(*,*) 'output dir........',out_dir
                  

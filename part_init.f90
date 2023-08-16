@@ -9,10 +9,10 @@ module part_init
             use boundary
             use inputs, only: PI, km_to_m, beta_particle, kboltz, mion, &
             nf_init,b0_init,mu0,boundx, q, mO, va_f, delz, &
-            ddthickness, plasma_beta,FSBeamWidth, FSThermalRatio,ddthickness,FSDriftSpeed,ForeshockBeta
+            ddthickness, plasma_beta,FSBeamWidth, FSThermalRatio,ddthickness,FSDriftSpeed,ForeshockBeta, r_0
             use grid, only: qx,qy,qz
             use gutsp
-            use var_arrays, only: vp,vp1,xp,up,m_arr,beta_p,mix_ind,b0, b1, ijkp
+            use var_arrays, only: vp,vp1,xp,up,m_arr,beta_p,mix_ind,b0, b1, ijkp, cx,cy,cz
             implicit none
             integer(4), intent(in):: Ni_tot_1, Ni_tot_2
             real, intent(in):: mass, vth
@@ -22,7 +22,7 @@ module part_init
             real:: vx, vy, vz, va, fitdist, EvBx, EvBy,EvBz!, &
                   !vxring, vyring, vzring,vring,vr,vtheta
             integer:: l,m,i,j,k
-            real :: pl_beta(nx,ny,nz)
+            real :: pl_beta(nx,ny,nz), r
             !real, allocatable :: pl_beta(:,:,:)
             !allocate(pl_beta(nx,ny,nz))
 
@@ -38,45 +38,7 @@ module part_init
 
             do l = Ni_tot_1,Ni_tot_2
 
-                  ! X Component
-                  if ((population .eq. 1) .or. (population .eq. 5) )then !Solar Wind
-                       
-                        
-                        if (boundx .eq. 5) then
-                              xp(l,1) = 0.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) +(1.0)*(qx(2)-qz(1)) !Shock real, to propagate SW/field
-                        endif
-                        if (boundx .eq. 4) then
-                              !xp(l,1) = 1.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) !Normal runs, open boundary
-                              xp(l,1) = 0.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) !Normal runs, open boundary
-                        endif
-                                                
-                  else if (population .eq. 2 .or. population .eq. 6) then !Foreshock Right
                   
-                       
-                        xp(l,1) = qx(nx-1)+(1.0-pad_ranf())*(qx(2)-qx(1))
-                        ! xp(l,1) = (1.0-pad_ranf())*(qx(1))!+qx(1)
-                        !xp(l,1) = (1.0-pad_ranf())*(qx(1))!+qx(1))
-                        
-                  else if ((population .eq. 0) .or. (population .eq. 4)) then !Solar Wind, Everywhere
-                  
-                        !mix_ind(l) = 0
-                        xp(l,1) = (qx(2)-qx(1))+(1.0-pad_ranf())*(qx(nx-1)+qx(1))!-1)+qx(1)) !nx-1 for periodic, nx for nonperiodic in x
-                        !xp(l,1) = (1.0-pad_ranf())*(qx(nx)-qx(1))
-                        
-                  else if (population .eq. 3) then !Foreshock, initial Beam
-                  
-                        !mix_ind(l) = 1
-                        !xp(l,1) = qx(nx/2 - nx/5)+(1.0-pad_ranf())*(qx(nx)-qx(nx/2-nx/5))
-                        !xp(l,1) = qx(nx/2)+(1.0-pad_ranf())*(qx(nx)-qx(nx/2))
-                        !xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1))
-                        xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(nx-1)+qx(1)) !nx-1 for periodic, nx for nonperiodic in x
-                        
-                  else if ((population .eq. 7) .or. (population .eq. 7) )then !Foreshock Left
-                  
-                        !mix_ind(l) = 1
-                        xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1))
-                        
-                  endif
 
 
 
@@ -145,13 +107,111 @@ module part_init
 
                         23 continue
 
+                  else if (population .eq. 0) then !plasma avoid dipole
+                        mix_ind(l) = 0
+                        !Stay away from dipole center
+                        montecarlo = 0
+                        
+                        !do 24 while (montecarlo .eq. 0)
+                        
+                              xp(l,3) = qz(1)+(1.0-pad_ranf())*(qz(nz-1)+qz(1))! qz(1)+(1.0-pad_ranf())*(qz(nz))
+                              
+                         !     if (  (xp(l,3) .le. 45*(qx(2)-qx(1))) .or. (xp(l,3) .ge. 55*(qx(2)-qx(1))) ) montecarlo = 1
+
+                        !24 continue
+
+
                   else !All other Z
                         mix_ind(l) = 0
                         xp(l,3) = qz(1)+(1.0-pad_ranf())*(qz(nz-1)-qz(1))
                   endif
 
 
+                  ! X Component
+                  if ((population .eq. 1) .or. (population .eq. 5) )then !Solar Wind
 
+                        if (boundx .eq. 5) then
+                              xp(l,1) = 0.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) +(1.0)*(qx(2)-qz(1)) !Shock real, to propagate SW/field
+                        endif
+
+                        if (boundx .eq. 4) then
+                              xp(l,1) = 1.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) !Normal runs, open boundary
+
+                             
+
+                        endif
+
+                                                
+                  else if (population .eq. 2 .or. population .eq. 6) then !Foreshock Right
+                  
+                       
+                        xp(l,1) = qx(nx-1)+(1.0-pad_ranf())*(qx(2)-qx(1))
+                        ! xp(l,1) = (1.0-pad_ranf())*(qx(1))!+qx(1)
+                        !xp(l,1) = (1.0-pad_ranf())*(qx(1))!+qx(1))
+                        
+                  else if ((population .eq. 0) .or. (population .eq. 4)) then !Solar Wind, Everywhere
+                  
+                        !mix_ind(l) = 0
+                        !xp(l,1) = (qx(2)-qx(1))+(1.0-pad_ranf())*(qx(nx)+qx(1))    !-1)+qx(1)) !nx-1 for periodic, nx for nonperiodic in x
+                        !xp(l,1) = (1.0-pad_ranf())*(qx(nx)-qx(1))
+
+
+                        !Stay away from dipole center
+                        !montecarlo = 0
+                        mix_ind(l) = 0
+                        !do 26 while (montecarlo .eq. 0)
+                        
+                              !xp(l,1) = (qx(1))+(1.0-pad_ranf())*(qx(nx-1)+qx(1))
+                              montecarlo = 0
+                              do 44 while (montecarlo .eq. 0) 
+                                    xp(l,1) = (qx(1))+(1.0-pad_ranf())*(qx(nx-1)+qx(1))    
+                                    xp(l,3) = qz(1)+(1.0-pad_ranf())*(qz(nz-1)-qz(1))  
+                                    r = sqrt((xp(l,1)-cx)**2 + (xp(l,2)-cy)**2 + (xp(l,3)-cz)**2)
+                                    !write(*,*) 'r_r_0',r_0*(qx(2)-qx(1)),r
+                                    if (r .gt. r_0*(qx(2)-qx(1))) then
+                                          montecarlo = 1
+                                          !write(*,*) 'r_0,r,x,y,z',r_0*(qx(2)-qx(1)),r,xp(l,1)/(qx(2)-qx(1)),xp(l,2)/(qx(2)-qx(1)),xp(l,3)/(qx(2)-qx(1))
+
+                                    else
+                                    endif
+
+
+                              44 continue      
+                        !      if (  (xp(l,1) .le. 99*(qx(2)-qx(1))) .or. (xp(l,1) .ge. 116*(qx(2)-qx(1))) ) montecarlo = 1
+
+                        !26 continue
+
+                  else if (population .eq. -1) then !isnide dipole          
+                        mix_ind(l) = 0
+                        montecarlo = 0
+                        do 45 while (montecarlo .eq. 0) 
+                              xp(l,1) = (qx(1))+(1.0-pad_ranf())*(qx(nx-1)+qx(1))      
+                              xp(l,3) = qz(1)+(1.0-pad_ranf())*(qz(nz-1)-qz(1))
+                              r = sqrt((xp(l,1)-cx)**2 + (xp(l,2)-cy)**2 + (xp(l,3)-cz)**2)
+                              if (r .le. r_0*(qx(2)-qx(1))) then
+                                    montecarlo = 1
+                                    !write(*,*) 'r_0,r,x,y,z',r_0*(qx(2)-qx(1)),r,xp(l,1)/(qx(2)-qx(1)),xp(l,2)/(qx(2)-qx(1)),xp(l,3)/(qx(2)-qx(1))
+
+                              else
+                              endif
+
+
+                        45 continue     
+                        
+                  else if (population .eq. 3) then !Foreshock, initial Beam
+                  
+                        !mix_ind(l) = 1
+                        !xp(l,1) = qx(nx/2 - nx/5)+(1.0-pad_ranf())*(qx(nx)-qx(nx/2-nx/5))
+                        !xp(l,1) = qx(nx/2)+(1.0-pad_ranf())*(qx(nx)-qx(nx/2))
+                        !xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1))
+                        xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(nx-1)+qx(1)) !nx-1 for periodic, nx for nonperiodic in x
+                        
+                  else if ((population .eq. 7) .or. (population .eq. 7) )then !Foreshock Left
+                  
+                        !mix_ind(l) = 1
+                        xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1))
+                        
+                  endif     
 
                   !Label top and bottom SW ions for planar shock run
                   if ( ((population .eq. 0) .or. (population .eq. 1)) .and. (boundx .eq. 5)) then
@@ -177,13 +237,23 @@ module part_init
 
                   
                   
-                  if ((population .eq. 1) .or. (population .eq. 5) .or. (population .eq. 0) .or. (population .eq. 4)) then !Solar Wind, Left Edge
+                  if ((population .eq. 1) .or. (population .eq. 5) .or. (population .eq. 4)) then !Solar Wind, Left Edge
                         vp(l,1) = va_f*va+vx
                         vp(l,2) = vy
                         vp(l,3) = vz !- 1.0*va
                         
                         beta_p(l) = beta_particle
-
+                  else if (population .eq. -1) then
+                        vp(l,1) = vx/sqrt(2.0)
+                        vp(l,2) = vy/sqrt(2.0)
+                        vp(l,3) = vz/sqrt(2.0)
+                        beta_p(l) = beta_particle
+                  else if ((population .eq. 0)) then !ambient plasma everywhere
+                        vp(l,1) = vx
+                        vp(l,2) = vy
+                        vp(l,3) = vz !- 1.0*va
+                        !write(*,*)  'generating plasma'
+                        beta_p(l) = beta_particle      
                   else if ((population .eq. 2) .or. (population .eq. 3) .or. (population .eq. 7) .or. (population .eq. 6)) then !Foreshock Ions, Right Edge
                         call get_pindex(l)
                         i=ijkp(l,1)
@@ -342,13 +412,13 @@ module part_init
                   enddo
 
             enddo
-
+            
             call get_interp_weights()
 
             call update_np()
 
             call update_up(vp)
-
+            
       end subroutine load_foreshock_Maxwellian
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

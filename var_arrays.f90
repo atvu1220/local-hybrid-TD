@@ -63,7 +63,7 @@ module Var_Arrays
       integer:: ijkp(Ni_max,3)
       logical:: in_bounds(Ni_max)
       real:: mix_ind(Ni_max)
-      
+      real:: cx, cy, cz
       !Weight variables for trilinear interpolation
       real:: wght(Ni_max,8)
       

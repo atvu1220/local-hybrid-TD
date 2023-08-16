@@ -369,7 +369,96 @@ end subroutine periodic_yz
             
       end subroutine periodic_scalar_yz      
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-      
+      subroutine obstacle_boundary_E(E)
+            use dimensions
+            use inputs, only: r_0
+            use var_arrays, only: cx, cy, cz
+            use grid, only: dx_cell, dy_cell, dz_cell,qx,qy,qz, dx_grid, dy_grid, dz_grid
+
+            implicit none
+            real, intent(inout):: E(nx,ny,nz,3)
+            integer:: i,j,k,m
+            real::r
+
+
+            do i=1,nx
+                  do j=1,ny
+                        do k=1,nz
+                              r = sqrt((qx(i)-cx)**2 + (qy(j)-cy)**2 + (qz(k)-cz)**2)
+                              if (r .le. r_0*(qx(2)-qx(1))) then
+                                    !write(*,*) 'r_0,r',r_0,r
+                                    do m=1,3
+                                          E(i,j,k,m) = 0.0
+                                    enddo
+                              endif
+                        enddo
+                  enddo
+            enddo
+            
+            !write(*,*) 'boundary cx,cy,cz',cx,cy,cz
+      end subroutine obstacle_boundary_E
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine obstacle_boundary_nu(nu)
+            use dimensions
+            use inputs, only: r_0,nu_init
+            use var_arrays, only: cx, cy, cz
+            use grid, only: dx_cell, dy_cell, dz_cell,qx,qy,qz, dx_grid, dy_grid, dz_grid
+
+            implicit none
+            real, intent(inout):: nu(nx,ny,nz)
+            integer:: i,j,k
+            real::r
+
+
+            do i=1,nx
+                  do j=1,ny
+                        do k=1,nz
+                              r = sqrt((qx(i)-cx)**2 + (qy(j)-cy)**2 + (qz(k)-cz)**2)
+                              !write(*,*) 'boundary cx,cy,cz,r_0',cx,cy,cz,r,r_0
+                              if (r .le. r_0*(qx(2)-qx(1))) then
+                                    !write(*,*) 'r_0,r',r_0,r
+                                    nu(i,j,k) = nu(i,j,k) + 20*10*nu_init*exp(-r**2/r_0**2)
+                              endif
+                        enddo
+                  enddo
+            enddo
+            
+           !write(*,*) 'boundary cx,cy,cz',cx,cy,cz
+
+      end subroutine obstacle_boundary_nu
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
+      subroutine obstacle_boundary_B(b1p2)
+            use dimensions
+            use inputs, only: r_0
+            use var_arrays, only: cx, cy, cz
+            use grid, only: dx_cell, dy_cell, dz_cell,qx,qy,qz, dx_grid, dy_grid, dz_grid
+
+            implicit none
+            real, intent(inout):: b1p2(nx,ny,nz,3)
+            integer:: i,j,k,m
+            real::r
+            
+
+
+            do i=1,nx
+                  do j=1,ny
+                        do k=1,nz
+                              r = sqrt((qx(i)-cx)**2 + (qy(j)-cy)**2 + (qz(k)-cz)**2)
+                              if (r .le. r_0*(qx(2)-qx(1))) then
+                                    !write(*,*) 'r_0,r',r_0,r
+
+                                    do m=1,3
+                                          b1p2(i,j,k,m) = 0.0
+                                    enddo
+                              endif
+                        enddo
+                  enddo
+            enddo
+            
+            !write(*,*) 'boundary cx,cy,cz',cx,cy,cz
+
+      end subroutine obstacle_boundary_B
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!         
 !!!!!!!!!RANDOM NUMBER GENERATOR!!!!!!!!!!!!!!
 
       real function pad_ranf()

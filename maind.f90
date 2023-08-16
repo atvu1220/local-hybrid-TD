@@ -79,24 +79,33 @@ program hybrid
       
       call grd7()
       call grd6_setup(b0,bt,b12,b1,b1p2,nu,input_Eb)
+
+      call obstacle_boundary_nu(nu)
       call get_beta(Ni_tot_sys,beta)
       
       call MPI_BARRIER(MPI_COMM_WORLD,ierr)
     
       !Background Solar Wind
       call load_foreshock_Maxwellian(vth,1,Ni_tot,mion,0) !SW
-  
+
+      Ni_tot_1 = Ni_tot + 1
+      TD_initial = int(Ni_tot/4)
+      Ni_tot_2 = Ni_tot_1 + TD_initial -1
+      Ni_tot = Ni_tot_2  
+
+      call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,-1) !particles within dipole
+
       !Initial TD, TD center, turn off for real shock 1/28/22
-      if (boundx .eq. 4) then
-            Ni_tot_1 = Ni_tot + 1
-            TD_initial = procnum*floor(float(int((nx-2)*(ny-2)*TDcellBalance*ppc/procnum))/procnum) !for 15dd, 5.06 for 15dd (30depletionwidth), then divide by two because B drops only 25%, 4.24664 for 15dd (15depletionwidith), 0.283 for 1dd, 2.83 for 20dd, 2.53 for 16dd
-            Ni_tot_2 = Ni_tot_1 + TD_initial -1
-            Ni_tot = Ni_tot_2  
-            call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,4) !TD
-      elseif (boundx .eq. 5) then
-            !Real Shock, no TD balance
-      endif
-  
+      !if (boundx .eq. 4) then
+      !      Ni_tot_1 = Ni_tot + 1
+      !      TD_initial = procnum*floor(float(int((nx-2)*(ny-2)*TDcellBalance*ppc/procnum))/procnum) !for 15dd, 5.06 for 15dd (30depletionwidth), then divide by two because B drops only 25%, 4.24664 for 15dd (15depletionwidith), 0.283 for 1dd, 2.83 for 20dd, 2.53 for 16dd
+      !      Ni_tot_2 = Ni_tot_1 + TD_initial -1
+      !      Ni_tot = Ni_tot_2  
+      !      call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,4) !TD
+      !elseif (boundx .eq. 5) then
+      !      !Real Shock, no TD balance
+      !endif
+      
       if (my_rank .eq. 0) then
             write(*,*) 'Total Particles, TD Particles',Ni_tot, TD_initial
       end if
@@ -230,7 +239,7 @@ program hybrid
             call get_gradP()
 
             call curlB(bt,np,aj)
-
+            call obstacle_boundary_B(b1)
             call edge_to_center(bt,btc)
             call extrapol_up()
 
@@ -238,79 +247,86 @@ program hybrid
 
 
             !Injection when previously injected ions move out of cell.
-            if (m .gt. 0.5*sw_delayTime ) then
+            !if (m .gt. 0.5*sw_delayTime ) then
                  
-                  Ni_tot_1 = Ni_tot+1
+                  Ni_tot_1 = Ni_tot + 1
                   Ni_tot_2 = Ni_tot + Nx_boundary - 1
                   Ni_tot = Ni_tot_2
                   call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,1) !SW at left boundary
-            
-                  if (boundx .ne. 5) then
-                        Ni_tot_1 = Ni_tot+1
-                        Ni_tot_2 = Ni_tot + TD_boundary -1
-                        Ni_tot = Ni_tot_2
-                        call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,5) !TD at left boundary
+            !
+            !      if (boundx .ne. 5) then
+            !            Ni_tot_1 = Ni_tot+1
+            !            Ni_tot_2 = Ni_tot + TD_boundary -1
+            !            Ni_tot = Ni_tot_2
+            !            call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,5) !TD at left boundary
+            !      
+            !            if (quasiparallel .eq. 1) then 
+            !                  Ni_tot_1 = Ni_tot+1
+            !                  Ni_tot_2 = Ni_tot + FS_boundary - 1
+            !                  Ni_tot = Ni_tot_2
+            !                  call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,2) !FS Bot Right boundary
+            !            endif
+            !      
+            !            if (quasiparallel .eq. 2) then 
+            !                  Ni_tot_1 = Ni_tot+1
+            !                  Ni_tot_2 = Ni_tot + FS_boundary - 1
+            !                  Ni_tot = Ni_tot_2
+            !                  call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,2) !FS Bot Right boundary
+            !      
+            !                  Ni_tot_1 = Ni_tot+1
+            !                  Ni_tot_2 = Ni_tot + FS_boundary - 1
+            !                  Ni_tot = Ni_tot_2
+            !                  call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,6) !FS Top Right Boundary
+            !            endif
+            !      endif
+
+            !call f_update_tlev(b1,b12,b1p2,bt,b0)  
                   
-                        if (quasiparallel .eq. 1) then 
-                              Ni_tot_1 = Ni_tot+1
-                              Ni_tot_2 = Ni_tot + FS_boundary - 1
-                              Ni_tot = Ni_tot_2
-                              call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,2) !FS Bot Right boundary
-                        endif
-                  
-                        if (quasiparallel .eq. 2) then 
-                              Ni_tot_1 = Ni_tot+1
-                              Ni_tot_2 = Ni_tot + FS_boundary - 1
-                              Ni_tot = Ni_tot_2
-                              call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,2) !FS Bot Right boundary
-                  
-                              Ni_tot_1 = Ni_tot+1
-                              Ni_tot_2 = Ni_tot + FS_boundary - 1
-                              Ni_tot = Ni_tot_2
-                              call load_foreshock_Maxwellian(vth,Ni_tot_1,Ni_tot_2,mion,6) !FS Top Right Boundary
-                        endif
-                  endif
-
-                  call f_update_tlev(b1,b12,b1p2,bt,b0)  
-                  
-            endif
-            
+            !endif
+            call get_vplus_vminus
+            call improve_up
+            call get_Ep
+            call get_vplus_vminus
+            call improve_up
+            call get_Ep
+            call get_vplus_vminus
+            call get_vp_final
 
 
-            call get_interp_weights()
+            !call get_interp_weights()
 
 
-            call update_np()                  !np at n+1/2
+            !call update_np()                  !np at n+1/2
 
-            call update_up(vp)            !up at n+1/2
+            !call update_up(vp)            !up at n+1/2
 
-            call get_gradP()
+            !call get_gradP()
  
-            call curlB(bt,np,aj)
+            !call curlB(bt,np,aj)
 
 
 
-            call edge_to_center(bt,btc)
+            !call edge_to_center(bt,btc)
 
 
-            call extrapol_up()
+            !call extrapol_up()
 
-            call get_Ep()
-
-            
-            call get_vplus_vminus()
-            call improve_up()
+            !call get_Ep()
 
             
+            !call get_vplus_vminus()
+            !call improve_up()
 
-            call get_Ep()
+            
+
+            !call get_Ep()
    
 
 
-            call get_vplus_vminus()
+            !call get_vplus_vminus()
 
 
-            call get_vp_final()
+            !call get_vp_final()
 
 
             
@@ -334,7 +350,7 @@ program hybrid
             
             do n=1,ntf
                   call curlB(bt,np,aj)
-                  
+                  call obstacle_boundary_B(b1)
                   call predict_B(b12,b1p2,bt,E,aj,up,nu,dtsub)
                   
                   call correct_B(b1,b1p2,E,aj,up,np,nu,dtsub)
@@ -470,11 +486,11 @@ program hybrid
               if (ndiag_part .eq. nout) then
                    if (my_rank .ge. 0) then
                         write(120) m
-                        write(120) mix_ind
+                        !write(120) mix_ind
                         write(305) m
-                        write(305) xp
+                        !write(305) xp
                         write(310) m
-                        write(310) vp
+                        !write(310) vp
                     endif    
                     ndiag_part = 0
             endif

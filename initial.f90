@@ -6,8 +6,9 @@ contains
       
 subroutine grd6_setup(b0,bt,b12,b1,b1p2,nu,input_Eb)
 use inputs, only: q, mO, PI, b0_init, nu_init, km_to_m, mu0,delz, pi, &
-ddthickness, magneticShear,ByConeAngle, boundx, quasiparallel
-use grid, only: dx_cell, dy_cell, dz_cell,qx,qy,qz
+ddthickness, magneticShear,ByConeAngle, boundx, quasiparallel, r_0
+use grid, only: dx_cell, dy_cell, dz_cell,qx,qy,qz, dx_grid, dy_grid, dz_grid
+use var_arrays, only: cx,cy,cz
 implicit none
 real, intent(out):: b0(nx,ny,nz,3), &
 bt(nx,ny,nz,3), &
@@ -19,7 +20,7 @@ real, intent(inout):: input_Eb
 					
 real:: eoverm, mO_q, vol, b0eoverm
 real:: phi, dtheta, ByConeAngleDelta
-real:: cx,cy,cz,r,moment,x,y,z
+real:: r,moment,x,y,z
 integer:: i,j,k,m,Bsetup
 
 !if (quasiparallel .eq. 1) then
@@ -38,7 +39,7 @@ integer:: i,j,k,m,Bsetup
 !Bsetup = 21
 !endif
 
-Bsetup = 24
+Bsetup = 25
 
 dtheta = 2*pi / 4 /(2*ddthickness)
 
@@ -537,27 +538,45 @@ if (Bsetup .eq. 23) then !BLMN Coordinates, with variable coneAngle By
         endif
     endif
 
+
+
+
+
     if (Bsetup .eq. 25) then !Curved shock with dipole
+        !b0(i,j,k,1) = b0_init*eoverm
+        !b0(i,j,k,2) = b0_init*eoverm
+        !b0(i,j,k,3) = 0.0
 
-        cx = nx+6; !500
-        cy = 2;
-        cz = nz/2;
-        moment = -((qz(2)-qz(1))/10)**3 * eoverm!-8*10**15 * eoverm * b0_init
+
+        cx = qx(int(nx/2+r_0)) + dx_grid(nx/2 +r_0 )/2 !500
+        cy = qy(ny-1)/2       + dy_grid(ny/2)/2    
+        cz = qz(nz/2)         + dz_grid(nz/2)/2    
+        !write(*,*) 'cx,cy,cz',cx,cy,cz
+        !moment = -((qz(2)-qz(1))/10)**3 * eoverm * 50*10**3*10**-9!*-8*10**15 !* eoverm * b0_init
+        !moment = -(6371.0/800)**3 * 6.5e-5!*-8*10**15 !* eoverm * b0_init
+        
+        moment = -(6371.0/800)**3 * 80e-5!*-8*10**15 !* eoverm * b0_init
+        !moment = -(6371.0/800)**3 * 1.5e-5!*-8*10**15 !* eoverm * b0_init
+
         !write(*,*) 'eoverm, b0_init, eoverm*b0_init,moment,', eoverm, b0_init, b0_init*eoverm, moment
-        x = qx(i) - cx*(qx(2)-qx(1))
-        y = qy(j) - cy*(qy(2)-qy(1))
-        z = qz(k) - cz*(qz(2)-qz(1))
+        x = qx(i) - cx!*(qx(2)-qx(1))
+        y = qy(j) - cy!*(qy(2)-qy(1))
+        z = qz(k) - cz!*(qz(2)-qz(1))
 
-        r = sqrt(x**2 + 0*y**2 + z**2)
+        r = sqrt(x**2 + y**2 + z**2)
 
-        b0(i,j,k,1) = 3* moment * x * z / r**5 + b0_init*eoverm
-        b0(i,j,k,2) = 0.0!3* moment * y * z / r**5
-        b0(i,j,k,3) =    moment *(3*z**2 - r**2)/ r**5
+        b0(i,j,k,1) = 1.0*(3.0* moment * x * z / r**5)*eoverm + b0_init*eoverm
+        b0(i,j,k,2) = 1.0*(3.0*moment *y*z/ r**5)*eoverm
+        b0(i,j,k,3) = 1.0*(moment * (3.0*z**2-r**2) / r**5)*eoverm
 
-        if (i > nx-100) then
+        !if (i > nx-100) then
             !write(*,*) 'Bx,By,Bz', b0(i,j,k,1), b0(i,j,k,2), b0(i,j,k,3)
-        endif
+        !endif
     endif
+
+     ! Initially there is no perturbation
+     !b1(:,:,:,:) = 0.0
+     !b1p2(:,:,:,:) = 0.0
 
 
 
@@ -568,19 +587,19 @@ enddo
 enddo
 
 do i=1,nx
-do j=1,ny
-do k= 1,nz
-nu(i,j,k) = nu_init
-do m = 1,3
-bt(i,j,k,m) = b0(i,j,k,m)
-b12(i,j,k,m) = b0(i,j,k,m)
-b1(i,j,k,m) = b0(i,j,k,m)
-b1p2(i,j,k,m) = b0(i,j,k,m)
-vol = dx_cell(i)*dy_cell(j)*dz_cell(k)*km_to_m**3
-input_Eb = input_Eb + (vol/(2.0*mu0))*(mO_q*b0(i,j,k,m))**2
-enddo
-enddo
-enddo
+    do j=1,ny
+        do k= 1,nz
+            nu(i,j,k) = nu_init
+            do m = 1,3
+                bt(i,j,k,m) = b0(i,j,k,m)
+                b12(i,j,k,m) = b0(i,j,k,m)
+                b1(i,j,k,m) = 0.0!b0(i,j,k,m)
+                b1p2(i,j,k,m) = 0.0!b0(i,j,k,m)
+                vol = dx_cell(i)*dy_cell(j)*dz_cell(k)*km_to_m**3
+                input_Eb = input_Eb + (vol/(2.0*mu0))*(mO_q*b0(i,j,k,m))**2
+            enddo
+        enddo
+    enddo
 enddo
 
 end subroutine grd6_setup

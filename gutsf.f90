@@ -22,9 +22,9 @@ module gutsf
             do i=1,nx
                   do j=1,ny
                         do k= 1,nz
-                              bt(i,j,k,1) = b1p2(i,j,k,1) !+ b0(i,j,k,1)
-                              bt(i,j,k,2) = b1p2(i,j,k,2) !+ b0(i,j,k,2)
-                              bt(i,j,k,3) = b1p2(i,j,k,3) !+ b0(i,j,k,3) 
+                              bt(i,j,k,1) = b1p2(i,j,k,1) + b0(i,j,k,1)
+                              bt(i,j,k,2) = b1p2(i,j,k,2) + b0(i,j,k,2)
+                              bt(i,j,k,3) = b1p2(i,j,k,3) + b0(i,j,k,3) 
                               do m=1,3
                                     b12(i,j,k,m)= b1(i,j,k,m)
                                     b1(i,j,k,m) = b1p2(i,j,k,m)
@@ -33,6 +33,9 @@ module gutsf
                   enddo
             enddo
             
+            call obstacle_boundary_B(bt)
+            call obstacle_boundary_B(b12)
+            call obstacle_boundary_B(b1)
 
       end subroutine f_update_tlev
       
@@ -234,7 +237,7 @@ module gutsf
             enddo
             
             call boundary_vector(E)
-      
+            call obstacle_boundary_E(E)
       end subroutine get_E
       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -265,7 +268,7 @@ module gutsf
             enddo
             
             call boundary_vector(b1p2)
-            
+            call obstacle_boundary_B(b1p2)
       end subroutine predict_B
       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -303,6 +306,7 @@ module gutsf
             enddo
             
             call curlB(b1p1,np,aj)
+            call obstacle_boundary_B(b1p1)
             call face_to_center(aj,aa)
 
              do m=1,3
@@ -334,6 +338,7 @@ module gutsf
             enddo
             
             call boundary_vector(E)
+            call obstacle_boundary_E(E)
             
       end subroutine get_Ep1
       
@@ -374,7 +379,7 @@ module gutsf
             enddo
             
             call boundary_vector(b1p2)
-            
+            call obstacle_boundary_B(b1p2)
       end subroutine correct_B
       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

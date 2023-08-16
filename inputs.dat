@@ -1,13 +1,13 @@
 5e-9       	 				        !magnetic field (Tesla)
 5e15                 				!minimum density (km^-3)
-0.02                				!particle time step (fraction of omega_i)
+0.05                				!particle time step (fraction of omega_i) (0.02)
 5000                				!number of time steps (1000)
-25                   				!data output interval (25)
+5                   				!data output interval (25)
 10.0                   				!flow speed (V_A)
 1.0                  				!Plasma beta - Determines thermal speed for Maxwellian
 1.0                   				!grid size as fraction of lambda_i
 0.0025		      				    !nu_init_frac, fraction of gyrofrequency for nu_init (0.0025)
-40                   				!number of particles per cell
+24                   				!number of particles per cell
 0.0                				    !electron temperature (eV)
 4                     				!Boudary condition (1: fully periodic   2: Periodic on xy   4:periodic on y   5: periodic on yz)
 1       					        !Discontinuity half-thickness, in lambda_i
@@ -18,4 +18,5 @@
 90.0						        !Magnetic Shear Angle across Harris Current Sheet
 2						            !Number of Quasi-parallel sides.
 15.0						        !By Cone Angle, 15.0, 30.0 only
+25                                  !obstacle distance from left boundary
 '/home/andrew/Documents/Run36/'     !output directorys
