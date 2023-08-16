@@ -278,52 +278,23 @@ program hybrid
 
 
             call get_interp_weights()
-
-
-            call update_np()                  !np at n+1/2
-
+            call update_np()               !np at n+1/2
             call update_up(vp)            !up at n+1/2
-
             call get_gradP()
- 
             call curlB(bt,np,aj)
-
-
-
             call edge_to_center(bt,btc)
-
-
             call extrapol_up()
-
             call get_Ep()
-
-            
             call get_vplus_vminus()
             call improve_up()
-
-            
-
             call get_Ep()
-   
-
-
             call get_vplus_vminus()
-
-
             call get_vp_final()
-
-
-            
             call move_ion_half() !1/2 step ion move to n+1/2
-
             call get_interp_weights()
-
             call update_np() !np at n+1/2
-
             call update_up(vp) !up at n+1/2
-            
             call get_gradP()
-      
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !       Subcycling loop
@@ -342,9 +313,7 @@ program hybrid
                   call f_update_tlev(b1,b12,b1p2,bt,b0)
                   
             enddo
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!           
- 
             call move_ion_half()       !final ion move to n+1
             call update_foreshock()
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -467,7 +436,7 @@ program hybrid
             endif
 
                   !Output Dist data
-              if (ndiag_part .eq. nout) then
+              if (ndiag_part .eq. 1*nout) then
                    if (my_rank .ge. 0) then
                         write(120) m
                         write(120) mix_ind

@@ -2,7 +2,7 @@ module gutsp
       implicit none
       contains
       subroutine remove_ion(ion_l)
-! Removes particles from the simulation that have gone out of bounds
+      ! Removes particles from the simulation that have gone out of bounds
             use dimensions
             use inputs, only: km_to_m
             use var_arrays, only: xp,vp,vp1,Ni_tot,input_E,ijkp,beta,beta_p,m_arr,wght,mix_ind,vplus,vminus
@@ -2658,7 +2658,7 @@ subroutine get_temperature_cold()
                         xp(:,2) = qy(ny-1) - (qy(1) - xp(:,2))
                   endwhere
                   
-                  ! Particles are put back in at opposite velocity in a random location in x and y
+                  ! Particles that leave z boudnary are put back in at opposite velocity in a random location in x and y
                   do l=1,Ni_tot
                         if (xp(l,3) .le. qz(1)) then
                               vp(l,3) = -vp(l,3)
@@ -2693,7 +2693,7 @@ subroutine get_temperature_cold()
                   do l=Ni_tot,1,-1
                   
                         !x boundaries
-                        if ( (xp(l,1) .lt. 0) )then!  .and. (vp(l,1) .lt. 0) )  then
+                        if ( (xp(l,1) .lt. 0) ) then!  .and. (vp(l,1) .lt. 0) )  then
                          !     call remove_ion(l)
                         else if ( ( xp(l,1) .gt. qx(nx) )) then! .and. ( vp(l,1) .gt. 0 ) .and. (mix_ind(l) .eq. 1) ) then
                               call remove_ion(l)     
@@ -2719,7 +2719,7 @@ subroutine get_temperature_cold()
 
             endif
 
-            ! Planar Shock simuilations, with shock generation on right side.
+            ! Planar Shock simulations, with shock generation on right side.
             if (boundx .eq. 5) then  !Periodic in y and z, for shock generation boundary - particles that leave left boundary are removed, right boundary are reflected
                   
                   !Y Direction
@@ -2742,35 +2742,31 @@ subroutine get_temperature_cold()
                         !x boundaries
                         !if ( (xp(l,1) .lt. (qx(2)-qx(1)) )  .and. ( vp(l,1) .lt. 0  ) )then!  .and. (vp(l,1) .lt. 0) )  then
                         if ( (xp(l,1) .lt. 0)   .and. (vp(l,1) .lt. 0) )  then
-                              !call remove_ion(l)        
-                              vp(l,1) = 0.0
-                              vp1(l,1) = 0.0  
+                              call remove_ion(l)        
+                              !vp(l,1) = 0.0
+                              !vp1(l,1) = 0.0  
                         else if ( ( xp(l,1) .ge. qx(nx-1) )) then! .and. ( vp(l,1) .gt. 0 ) .and. (mix_ind(l) .eq. 1) ) then 
-                              
-                              !vmag = sqrt(vp(l,1)*vp(l,1) + vp(l,2)*vp(l,2) + vp(l,3)*vp(l,3))
-                              !vx = -vmag*abs(sqrt(-log(pad_ranf()))*cos(PI*pad_ranf()))
-                              !vy = vmag*sqrt(-log(pad_ranf()))*cos(PI*pad_ranf())
-                              !vz = vmag*sqrt(-log(pad_ranf()))*cos(PI*pad_ranf())
-
-                              !xp(l,1) = qx(nx-1)-(xp(l,1) - qx(nx-1))
-                             ! if ((xp(l,3) .ge. qx(1)*nz/3-qx(1)*5) .and. (xp(l,3) .le. qx(1)*nz/3+qx(1)*5)) then !  
-                              !      vp(l,1) = 0
-                             !       xp(l,1) = qx(nx-1)-(xp(l,1) - qx(nx-1))
-                             !       mix_ind(l) = 1 !reflected solar wind ions are not marked as "mixed" or as foreshock ions
-
-                             ! else if ((xp(l,3) .ge. qx(1)*2*nz/3-qx(1)*5) .and. (xp(l,3) .le. qx(1)*2*nz/3+qx(1)*5))  then !BL top
-                             !       vp(l,1) = 0
-                             !       xp(l,1) = qx(nx-1)-(xp(l,1) - qx(nx-1))
-                             !       mix_ind(l) = 1 !reflected solar wind ions are not marked as "mixed" or as foreshock ions
-                             ! else
-
-
-                              vp(l,1) = -vp(l,1)
+                              vp(l,1)  = -vp(l,1)
                               vp1(l,1) = -vp1(l,1)
-                              xp(l,1) = qx(nx-1)-(xp(l,1) - qx(nx-1))
-                             ! mix_ind(l) = 1 !reflected
+                              xp(l,1)  =  qx(nx-1) - (xp(l,1) - qx(nx-1))
+                            
+                              !xp(l,1) = qx(nx-1)-(xp(l,1) - qx(nx-1))
+                              !if ((xp(l,3) .ge. qx(1)*nz/3-qx(1)*5) .and. (xp(l,3) .le. qx(1)*nz/3+qx(1)*5)) then !  
+                              !      vp(l,1) = 0
+                              !       xp(l,1) = qx(nx-1)-(xp(l,1) - qx(nx-1))
+                              !       mix_ind(l) = 1 !reflected solar wind ions are not marked as "mixed" or as foreshock ions
 
-                            !  !reflected solar wind ions are now marked as "mixed" or as foreshock ions
+                              ! else if ((xp(l,3) .ge. qx(1)*2*nz/3-qx(1)*5) .and. (xp(l,3) .le. qx(1)*2*nz/3+qx(1)*5))  then !BL top
+                              !       vp(l,1) = 0
+                              !       xp(l,1) = qx(nx-1)-(xp(l,1) - qx(nx-1))
+                              !       mix_ind(l) = 1 !reflected solar wind ions are not marked as "mixed" or as foreshock ions
+                              ! else
+
+
+                             
+                              ! mix_ind(l) = 1 !reflected
+
+                             !  !reflected solar wind ions are now marked as "mixed" or as foreshock ions
                               !if ((xp(l,3) .le. qx(1)*nz/3) .or. (xp(l,3) .gt. 2*qx(1)*nz/3)) then
                               !      mix_ind(l) = 1 !bot
                               !else if ((xp(l,3) .gt. qx(1)*nz/3) .and. (xp(l,3) .le. 2*qx(1)*nz/3)) then

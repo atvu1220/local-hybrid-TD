@@ -19,21 +19,21 @@ module Var_Arrays
                   aj(nx,ny,nz,3), &     !curlB/(alpha*n)
                   nu(nx,ny,nz), &       !collision frequency
                   Ep(Ni_max,3), &       !Ion particle electric field
-                  E(nx,ny,nz,3), &        !E field from electron mom. eq.
-                  Ec(nx,ny,nz,3),&
-                  ExB(nx,ny,nz,3),& 	!ExB Drift Velocity from Initial Solar Wind Setup
+                  E(nx,ny,nz,3), &      !E field from electron mom. eq.
+                  Ec(nx,ny,nz,3),&      !E field at center of cell
+                  ExB(nx,ny,nz,3),&     !ExB Drift Velocity from Initial Solar Wind Setup
                   temp_p(nx,ny,nz), &   !temperature
                   mnp(nx,ny,nz), &      !mass density
-                  beta, beta_p(Ni_max), &       !variable for particle scaling
-                  m_arr(Ni_max), &
-                  np_t(nx,ny,nz), &
-                  np_b(nx,ny,nz), &
-                  up_t(nx,ny,nz,3), &
-                  up_b(nx,nz,nz,3), &
+                  beta, beta_p(Ni_max), &  !variable for particle scaling
+                  m_arr(Ni_max), &      !Mass of macroparticles
+                  np_t(nx,ny,nz), &     !Ion density of Top
+                  np_b(nx,ny,nz), &     !Ion Density of Bot
+                  up_t(nx,ny,nz,3), &   !Ion bulk flow of Top
+                  up_b(nx,nz,nz,3), &   !Ion bulk flow of Bot
                   input_p(3), &
                   input_E, input_Eb, prev_Etot, &
                   gradP(nx,ny,nz,3),&            !electron pressure gradient
-                  mixed(nx,ny,nz),& !FS ions
+                  mixed(nx,ny,nz),&     !0/1 Marker for either solar wind or foreshock
                   Ptherm(nx,ny,nz), &
                   PB(nx,ny,nz), &
                   Ptotal(nx,ny,nz), &
@@ -68,4 +68,3 @@ module Var_Arrays
       real:: wght(Ni_max,8)
       
 end module Var_Arrays
-                  

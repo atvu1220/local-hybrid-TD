@@ -46,16 +46,13 @@ module part_init
                               xp(l,1) = 0.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) +(1.0)*(qx(2)-qz(1)) !Shock real, to propagate SW/field
                         endif
                         if (boundx .eq. 4) then
-                              !xp(l,1) = 1.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) !Normal runs, open boundary
-                              xp(l,1) = 0.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) !Normal runs, open boundary
+                              xp(l,1) = 1.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) !Normal runs, open boundary
+                              !xp(l,1) = 0.0*qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1)) 
                         endif
                                                 
                   else if (population .eq. 2 .or. population .eq. 6) then !Foreshock Right
-                  
-                       
+            
                         xp(l,1) = qx(nx-1)+(1.0-pad_ranf())*(qx(2)-qx(1))
-                        ! xp(l,1) = (1.0-pad_ranf())*(qx(1))!+qx(1)
-                        !xp(l,1) = (1.0-pad_ranf())*(qx(1))!+qx(1))
                         
                   else if ((population .eq. 0) .or. (population .eq. 4)) then !Solar Wind, Everywhere
                   
@@ -66,9 +63,7 @@ module part_init
                   else if (population .eq. 3) then !Foreshock, initial Beam
                   
                         !mix_ind(l) = 1
-                        !xp(l,1) = qx(nx/2 - nx/5)+(1.0-pad_ranf())*(qx(nx)-qx(nx/2-nx/5))
-                        !xp(l,1) = qx(nx/2)+(1.0-pad_ranf())*(qx(nx)-qx(nx/2))
-                        !xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(2)-qz(1))
+
                         xp(l,1) = qx(1)+(1.0-pad_ranf())*(qx(nx-1)+qx(1)) !nx-1 for periodic, nx for nonperiodic in x
                         
                   else if ((population .eq. 7) .or. (population .eq. 7) )then !Foreshock Left
@@ -242,7 +237,7 @@ module part_init
                         !vp(l,3) = -FSDriftSpeed*va_f*va*( b0(i,j,k,3) / (  sqrt( b0(i,j,k,1)**2+b0(i,j,k,2)**2+b0(i,j,k,3)**2 ) ) ) + FSThermalRatio*vz + sqrt(2.0)/2.0*FSThermalRatio*vth + ( EvBx*b0(i,j,k,2) - EvBy*b0(i,j,k,1) ) / ( ( b0(i,j,k,1)**2+b0(i,j,k,2)**2+b0(i,j,k,3)**2 ) )
                         
                         
-                        !Shell distribution beam +exB
+                        !Shell distribution beam +ExB
                         !theta2 = pad_ranf()*2*PI
                         !phi2   = pad_ranf()*PI   
                         !vp(l,1) = -FSDriftSpeed*va_f*va*( b1(i,j,k,1) / (  sqrt( b1(i,j,k,1)**2+b1(i,j,k,2)**2+b1(i,j,k,3)**2 ) ) ) + FSThermalRatio*vth*cos(theta2)*sin(phi2) + ( EvBy*b1(i,j,k,3) - EvBz*b1(i,j,k,2) ) / ( ( b1(i,j,k,1)**2+b1(i,j,k,2)**2+b1(i,j,k,3)**2 ) ) 
@@ -272,8 +267,8 @@ module part_init
                   !     vp(l,2) = -FSDriftSpeed*va_f*va*( b1(i,j,k,2) / (  sqrt( b0(i,j,k,1)**2+b0(i,j,k,2)**2+b0(i,j,k,3)**2 ) ) ) + vy                - ( EvBx*b0(i,j,k,3) - EvBz*b0(i,j,k,1) ) / ( ( b0(i,j,k,1)**2+b0(i,j,k,2)**2+b0(i,j,k,3)**2 ) )
                   !     vp(l,3) = -FSDriftSpeed*va_f*va*( b1(i,j,k,3) / (  sqrt( b0(i,j,k,1)**2+b0(i,j,k,2)**2+b0(i,j,k,3)**2 ) ) ) + vz                + ( EvBx*b0(i,j,k,2) - EvBy*b0(i,j,k,1) ) / ( ( b0(i,j,k,1)**2+b0(i,j,k,2)**2+b0(i,j,k,3)**2 ) )
                         
-                  !!!!!!!!!1
-                        
+                        !!!!!!!!!
+
                         !Ring beam +exB Updated 12/22/2021
                   !	vring = sqrt(8.0*8.0-4.0*4.0)
                   !	vr = sqrt(vy*vy + vz*vz)

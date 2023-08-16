@@ -1,21 +1,22 @@
 5e-9       	 				        !magnetic field (Tesla)
 5e15                 				!minimum density (km^-3)
-0.02                				!particle time step (fraction of omega_i)
+0.02                				!particle time step (fraction of omega_i) (0.02)
 5000                				!number of time steps (1000)
 25                   				!data output interval (25)
 10.0                   				!flow speed (V_A)
 1.0                  				!Plasma beta - Determines thermal speed for Maxwellian
-1.0                   				!grid size as fraction of lambda_i
+1.0                   				!grid size as fraction of lambda_i (1.0)
 0.0025		      				    !nu_init_frac, fraction of gyrofrequency for nu_init (0.0025)
-96                   				!number of particles per cell
-0.0                				    !electron temperature (eV)
+96                   				!number of particles per cell (100)
+0.0                				    !electron temperature (eV) (0.0)
 5                     				!Boudary condition (1: fully periodic   2: Periodic on xy   4:periodic on y   5: periodic on yz)
-1       					        !Discontinuity half-thickness, in lambda_i
-75        					        !Foreshock Beam Width, in lambda_i, starts below nz/2-ddthickness
-12.0						        !Ratio of densities between foreshock ions over solar wind ions
-8.00    					        !Foreshock Thermal Multiplier (V_A)
-2.0   						        !Foreshock Drift Speed, multiplied by SW flow speed in V_A
-90.0						        !Magnetic Shear Angle across Harris Current Sheet
-2						            !Number of Quasi-parallel sides.
-15.0						        !By Cone Angle, 15.0, 30.0 only
-'/home/andrew/Documents/Run29s/'     !output directorys
+1       					        !Discontinuity half-thickness, in lambda_i (1.0)
+75        					        !Foreshock Beam Width, in lambda_i, starts below nz/2-ddthickness (75)
+12.0						        !Ratio of densities between foreshock ions over solar wind ions, for injection only (12.0)
+8.00    					        !Foreshock Thermal Multiplier (V_A) (8.00)
+2.0   						        !Foreshock Drift Speed, multiplied by SW flow speed in V_A, for injection only (2.0)
+90.0						        !Magnetic Shear Angle across Harris Current Sheet, for single TD only (90)
+2						            !Number of Quasi-parallel sides (2)
+15.0						        !By Cone Angle below TD1, for two TDs (15)
+30.0                                !By Cone Angle Difference across TD1, for two TDs (30)
+'/home/andrew/Documents/Run29/'     !output directory

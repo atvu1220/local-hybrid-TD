@@ -8,13 +8,13 @@ module boundary
             implicit none
             real, intent(inout):: b(nx,ny,nz,3)
 
-            if (boundx .eq. 1) then
+            if (boundx .eq. 1) then     !Fully Periodic
                   call periodic(b)
-            elseif (boundx .eq. 2) then
+            elseif (boundx .eq. 2) then !Periodic in x and y directions
                   call periodic_xy(b)
-            elseif (boundx .eq. 4) then
+            elseif (boundx .eq. 4) then !Periodic only in y direction
                   call periodic_y(b)
-            elseif (boundx .eq. 5) then
+            elseif (boundx .eq. 5) then !Periodic only in y and z directions
                   call periodic_yz(b)    
             else
                   write(*,*) 'Boundary conditions are unspecified'

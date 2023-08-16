@@ -9,7 +9,7 @@ module inputs
             etemp0, mion, va, va_f, &
             FSDriftSpeed, FSDensityRatio, ForeshockBeta, &
             TDcellBalance, magneticShear, &
-            ByConeAngle, FSThermalRatio
+            ByConeAngle, ByConeAngleDelta, FSThermalRatio
             
       real, parameter:: amu=1.6605e-27!, mion = 3.841e-26
       integer:: mp, nt, nout, boundx,ddthickness,FSBeamWidth, quasiparallel
@@ -105,6 +105,8 @@ module inputs
                  write(*,*) 'Number of quasiparallel sides........',quasiparallel
                  read(100,*) ByConeAngle
                  write(*,*) 'By Cone Angle........', ByConeAngle
+                 read(100,*) ByConeAngleDelta
+                 write(*,*) 'By Cone Angle Delta........', ByConeAngleDelta
                  read(100,*) out_dir
                  write(*,*) 'output dir........',out_dir
                  
