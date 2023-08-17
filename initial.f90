@@ -18,7 +18,7 @@ nu(nx,ny,nz)
 real, intent(inout):: input_Eb
 					
 real:: eoverm, mO_q, vol, b0eoverm
-real:: phi, dtheta, ByConeAngleDelta
+real:: phi, dtheta
 real:: cx,cy,cz,r,moment,x,y,z
 integer:: i,j,k,m,Bsetup
 

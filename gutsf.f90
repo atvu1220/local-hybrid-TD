@@ -38,8 +38,8 @@ module gutsf
       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine crossf2(aa,btc,cc)
-!The cross product is formed at the main cell center.  aa and btc must be given already 
-!extrapolated to the main cell center.
+      !The cross product is formed at the main cell center.  aa and btc must be given already 
+      !extrapolated to the main cell center.
             use dimensions
             use boundary
             implicit none

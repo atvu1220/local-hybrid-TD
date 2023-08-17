@@ -17,6 +17,6 @@
 2.0   						        !Foreshock Drift Speed, multiplied by SW flow speed in V_A, for injection only (2.0)
 90.0						        !Magnetic Shear Angle across Harris Current Sheet, for single TD only (90)
 2						            !Number of Quasi-parallel sides (2)
-15.0						        !By Cone Angle below TD1, for two TDs (15)
+-15.0						        !By Cone Angle below TD1, for two TDs (15)
 30.0                                !By Cone Angle Difference across TD1, for two TDs (30)
 '/home/andrew/Documents/Run29/'     !output directory
