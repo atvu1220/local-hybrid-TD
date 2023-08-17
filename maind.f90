@@ -222,20 +222,13 @@ program hybrid
             endif
 
             call get_interp_weights()
-
             call update_np() !np at n+1/2
-
             call update_up(vp) !up at n+1/2
-
             call get_gradP()
-
             call curlB(bt,np,aj)
-
             call edge_to_center(bt,btc)
             call extrapol_up()
-
             call get_Ep()
-
 
             !Injection when previously injected ions move out of cell.
             if (m .gt. 0.5*sw_delayTime ) then
@@ -290,6 +283,7 @@ program hybrid
             call get_Ep()
             call get_vplus_vminus()
             call get_vp_final()
+
             call move_ion_half() !1/2 step ion move to n+1/2
             call get_interp_weights()
             call update_np() !np at n+1/2
@@ -331,6 +325,7 @@ program hybrid
             
             ndiag = ndiag+1
             ndiag_part = ndiag_part + 1
+
             if (ndiag .eq. nout) then
                   call get_temperature() 
 
@@ -436,7 +431,7 @@ program hybrid
             endif
 
                   !Output Dist data
-              if (ndiag_part .eq. 1*nout) then
+              if (ndiag_part .eq. 4*nout) then
                    if (my_rank .ge. 0) then
                         write(120) m
                         write(120) mix_ind

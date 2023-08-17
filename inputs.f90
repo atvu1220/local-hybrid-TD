@@ -135,7 +135,7 @@ module inputs
                   delz = lambda_i*dx_frac       !dz at release coordinates
                   ddthickness = int(float(ddthickness)/dx_frac) !Ddthickness in the number of cells...ion inertial lengths.
                   dt= dt_frac*mion/(q*b0_init)  !main time step
-                  dtsub_init = dt/ntsub         !subcycle time step
+                  dtsub_init = dt/ntsub         !subcycle time step for magnetic field updates
                   vtop = vsw
                   vbottom = -vsw
                   
